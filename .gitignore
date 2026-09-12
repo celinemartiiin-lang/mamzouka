@@ -43,3 +43,5 @@ src-tauri/gen/android/**/build/
 src-tauri/gen/android/.gradle/
 *.apk
 *.aab
+emulator_screen*.png
+

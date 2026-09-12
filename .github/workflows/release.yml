@@ -1,0 +1,305 @@
+name: Release & Multi-Platform Deployment
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v2.0.0)'
+        required: false
+        default: ''
+      draft:
+        description: 'Publish as Draft release'
+        type: boolean
+        default: false
+      prerelease:
+        description: 'Mark as Pre-release'
+        type: boolean
+        default: false
+      build_engine:
+        description: 'Build & package runtime torrent engine (mamzouka-engine.zip + node.exe)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # =========================================================================
+  # 1. WINDOWS NSIS INSTALLER BUILD
+  # =========================================================================
+  build-windows:
+    name: Build Windows (NSIS .exe)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Obfuscate and secure frontend
+        run: npm run secure
+
+      - name: Build Tauri Windows Bundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: npx tauri build --target x86_64-pc-windows-msvc
+
+      - name: Package Windows Artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "dist-release" | Out-Null
+          $exe = Get-ChildItem -Path "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe" | Select-Object -First 1
+          if (-not $exe) {
+            $exe = Get-ChildItem -Path "src-tauri/target/release/bundle/nsis/*.exe" | Select-Object -First 1
+          }
+          if (-not $exe) { throw "NSIS installer executable not found!" }
+          
+          $tag = "${{ github.ref_name }}"
+          if (-not $tag -or $tag -eq "main") { $tag = "${{ inputs.tag }}" }
+          if (-not $tag) { $tag = "v2.0.0" }
+          
+          $dest = "dist-release/MamzoukaStream_${tag}_Windows_x64-Setup.exe"
+          Copy-Item $exe.FullName $dest
+          Write-Host "Created $dest ($([math]::Round((Get-Item $dest).Length / 1MB, 2)) MB)"
+          
+          # Compute SHA-256
+          $hash = (Get-FileHash $dest -Algorithm SHA256).Hash.ToLower()
+          "$hash  $([System.IO.Path]::GetFileName($dest))" | Out-File -FilePath "dist-release/windows-sha256.txt" -Encoding ascii
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: dist-release/*
+          if-no-files-found: error
+
+  # =========================================================================
+  # 2. ANDROID MULTI-ARCH APK BUILD
+  # =========================================================================
+  build-android:
+    name: Build Android (APK)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Setup Android SDK & NDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK (r26) & Build Tools
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "ndk;26.3.11579264" "build-tools;35.0.0" "platforms;android-35"
+          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/26.3.11579264" >> $GITHUB_ENV
+          echo "NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.3.11579264" >> $GITHUB_ENV
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Obfuscate and secure frontend
+        run: npm run secure
+
+      - name: Build Android ARM64 Release APK
+        env:
+          NDK_HOME: ${{ env.ANDROID_NDK_ROOT }}
+        run: |
+          npx tauri android build --apk --target aarch64
+
+      - name: Build Android ARMv7 Release APK
+        env:
+          NDK_HOME: ${{ env.ANDROID_NDK_ROOT }}
+        run: |
+          npx tauri android build --apk --target armv7
+
+      - name: Package Android Artifacts
+        run: |
+          mkdir -p dist-release-android
+          TAG="${{ github.ref_name }}"
+          if [ -z "$TAG" ] || [ "$TAG" = "main" ]; then TAG="${{ inputs.tag }}"; fi
+          if [ -z "$TAG" ]; then TAG="v2.0.0"; fi
+
+          # Find and copy generated APKs
+          find src-tauri/gen/android/app/build/outputs/apk/ -name "*.apk" | while read -r apk; do
+            BASENAME=$(basename "$apk")
+            ARCH="unknown"
+            if [[ "$BASENAME" == *"arm64"* ]] || [[ "$BASENAME" == *"aarch64"* ]]; then
+              ARCH="arm64-v8a"
+            elif [[ "$BASENAME" == *"armeabi"* ]] || [[ "$BASENAME" == *"armv7"* ]]; then
+              ARCH="armeabi-v7a"
+            elif [[ "$BASENAME" == *"universal"* ]]; then
+              ARCH="universal"
+            fi
+            TARGET="dist-release-android/MamzoukaStream_${TAG}_Android_${ARCH}.apk"
+            cp "$apk" "$TARGET"
+            echo "Packaged: $TARGET ($(du -h "$TARGET" | cut -f1))"
+            sha256sum "$TARGET" | awk '{print $1 "  " substr($2, match($2, /[^\/]+$/))}' >> dist-release-android/android-sha256.txt
+          done
+
+      - name: Upload Android Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release
+          path: dist-release-android/*
+          if-no-files-found: error
+
+  # =========================================================================
+  # 3. RUNTIME ENGINE PACKAGING (Optional / on demand)
+  # =========================================================================
+  build-engine:
+    name: Package Torrent Runtime Engine
+    runs-on: windows-latest
+    if: ${{ inputs.build_engine == true }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run Engine Packager Script
+        shell: pwsh
+        run: |
+          powershell -ExecutionPolicy Bypass -File scripts/package-runtime-deps.ps1
+
+      - name: Upload Engine Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-release
+          path: dist-engine/*
+          if-no-files-found: error
+
+  # =========================================================================
+  # 4. PUBLISH GITHUB RELEASE
+  # =========================================================================
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-windows, build-android]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-release
+          path: release-assets/
+
+      - name: Download Android Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: android-release
+          path: release-assets/
+
+      - name: Download Engine Artifacts (if built)
+        if: ${{ inputs.build_engine == true }}
+        uses: actions/download-artifact@v4
+        with:
+          name: engine-release
+          path: release-assets/
+
+      - name: Generate Combined Checksums & Release Notes
+        run: |
+          cd release-assets/
+          cat *-sha256.txt > SHA256SUMS.txt || true
+          rm -f *-sha256.txt
+          sha256sum * >> SHA256SUMS.txt.tmp 2>/dev/null || true
+          sort -u SHA256SUMS.txt.tmp > SHA256SUMS.txt 2>/dev/null || true
+          rm -f SHA256SUMS.txt.tmp
+          echo "Final release assets list:"
+          ls -la
+
+      - name: Determine Release Tag
+        id: get_tag
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [ -z "$TAG" ] || [ "$TAG" = "main" ]; then TAG="${{ inputs.tag }}"; fi
+          if [ -z "$TAG" ]; then TAG="v2.0.0"; fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_tag.outputs.tag }}
+          name: Mamzouka Stream ${{ steps.get_tag.outputs.tag }}
+          draft: ${{ inputs.draft || false }}
+          prerelease: ${{ inputs.prerelease || false }}
+          files: release-assets/*
+          body: |
+            ## 🚀 Mamzouka Stream ${{ steps.get_tag.outputs.tag }}
+
+            ### 📦 Downloads & Binaries
+            - **Windows (x64)**: `MamzoukaStream_${{ steps.get_tag.outputs.tag }}_Windows_x64-Setup.exe`
+            - **Android (ARM64-v8a)**: `MamzoukaStream_${{ steps.get_tag.outputs.tag }}_Android_arm64-v8a.apk`
+            - **Android (ARMeabi-v7a)**: `MamzoukaStream_${{ steps.get_tag.outputs.tag }}_Android_armeabi-v7a.apk`
+
+            ### 🛡️ Integrity Verification (SHA-256)
+            Download `SHA256SUMS.txt` to verify the authenticity of your binary:
+            ```bash
+            sha256sum -c SHA256SUMS.txt
+            ```
+
+            ### 📱 Android 15 & Modern Devices Compatibility
+            - Built with 16 KB page-size ELF alignment for modern Android 15+ devices.
+            - Full hardware acceleration with WebRTC & HLS native streaming.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -7,6 +7,8 @@
     "secure": "node scripts/secure-frontend.mjs",
     "dev": "node scripts/secure-frontend.mjs && tauri dev",
     "build": "node scripts/secure-frontend.mjs && tauri build",
+    "android:dev": "node scripts/secure-frontend.mjs && tauri android dev",
+    "android:build": "node scripts/secure-frontend.mjs && tauri android build --apk --target aarch64",
     "tauri": "tauri"
   },
   "devDependencies": {

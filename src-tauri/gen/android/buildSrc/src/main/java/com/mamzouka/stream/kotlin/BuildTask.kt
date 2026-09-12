@@ -26,6 +26,8 @@ open class BuildTask : DefaultTask() {
                     "$executable.exe",
                     "$executable.cmd",
                     "$executable.bat",
+                    """C:\Program Files\nodejs\npm.cmd""",
+                    """C:\Program Files\nodejs\npm.bat"""
                 )
                 
                 var lastException: Exception = e
