@@ -26,9 +26,12 @@ fn app_data_dir() -> PathBuf {
 /// $INSTDIR\engine (preferred) or per-user fallback.
 pub fn engine_dirs() -> Vec<PathBuf> {
     let exe = exe_dir();
+    let local = dirs::data_local_dir().unwrap_or_else(|| PathBuf::from("."));
     vec![
         exe.join("engine"),
         exe.join("resources").join("engine"),
+        local.join("MamzoukaStream").join("engine"),
+        local.join("com.mamzouka.stream").join("engine"),
         app_data_dir().join("engine"),
     ]
 }
@@ -50,10 +53,14 @@ pub fn find_ready_engine() -> Option<PathBuf> {
 /// ffmpeg lives next to the exe when an admin drops it there,
 /// otherwise in per-user app data (downloaded lazily, see below).
 pub fn local_ffmpeg_path() -> Option<PathBuf> {
+    let exe = exe_dir();
+    let local = dirs::data_local_dir().unwrap_or_else(|| PathBuf::from("."));
     let cands = [
-        exe_dir().join("ffmpeg.exe"),
-        exe_dir().join("resources").join("ffmpeg.exe"),
-        exe_dir().join("engine").join("ffmpeg.exe"),
+        exe.join("ffmpeg.exe"),
+        exe.join("resources").join("ffmpeg.exe"),
+        exe.join("engine").join("ffmpeg.exe"),
+        local.join("MamzoukaStream").join("engine").join("ffmpeg.exe"),
+        local.join("MamzoukaStream").join("bin").join("ffmpeg.exe"),
         app_data_dir().join("bin").join("ffmpeg.exe"),
     ];
     cands.into_iter().find(|p| p.exists())

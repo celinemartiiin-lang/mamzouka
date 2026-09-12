@@ -3027,6 +3027,7 @@ async function pollEngineHealth() {
     const data = await res.json().catch(() => ({}));
     setStatus(true, data && data.ffmpeg ? ' • ffmpeg ✓' : '');
   } catch (e) {
+    try { await invoke('start_torrent_engine'); } catch {}
     logError('engine-health', e);
     setStatus(false);
   }
@@ -3039,8 +3040,9 @@ function initEngineHealthPill() {
     pill.dataset.bound = '1';
     pill.style.cursor = 'pointer';
     pill.title = 'Check torrent engine';
-    pill.addEventListener('click', () => {
+    pill.addEventListener('click', async () => {
       if (el.serverStatusText) el.serverStatusText.textContent = t('ui.engChecking', 'Engine: Checking...');
+      try { await invoke('start_torrent_engine'); } catch {}
       pollEngineHealth();
     });
   }
@@ -3121,8 +3123,9 @@ function getFilteredTorrentStreams() {
   return list.filter((s) => s && (s.magnet_uri || s.info_hash));
 }
 
-function tryNextStream() {
+async function tryNextStream() {
   try {
+    try { await invoke('start_torrent_engine'); } catch {}
     const torrents = getFilteredTorrentStreams();
     if (!torrents.length) {
       showVideoErrorStructured({ code: 'NO_PEERS', message: 'No other torrent source available' });
@@ -3428,14 +3431,30 @@ async function startPlayback(stream, media, season = null, episode = null, opts 
 
     showPlayerLoading('⚡ Connecting to Torrent Network & Peers...');
 
+    let res = null;
     try {
-      const res = await fetch(`${state.torrentEngineUrl}/api/stream/start`, {
+      res = await fetch(`${state.torrentEngineUrl}/api/stream/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ magnet: stream.magnet_uri }),
       });
+    } catch (fetchErr) {
+      console.warn('[WebTorrent Engine not responding, waking engine...]', fetchErr);
+      try {
+        await invoke('start_torrent_engine');
+        await new Promise((r) => setTimeout(r, 1500));
+        res = await fetch(`${state.torrentEngineUrl}/api/stream/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ magnet: stream.magnet_uri }),
+        });
+      } catch (retryErr) {
+        console.warn('[WebTorrent Engine auto-wake failed]', retryErr);
+      }
+    }
 
-      if (res.ok) {
+    try {
+      if (res && res.ok) {
         const data = await res.json();
         if (data.streamUrl) {
           console.log('[WebTorrent Engine] Streaming active:', data.streamUrl, data.code);

@@ -631,109 +631,193 @@ fn get_trakt_sync_preview(state: State<'_, AppState>) -> Result<String, String> 
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
+static ENGINE_STARTING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+#[tauri::command]
+async fn start_torrent_engine() -> Result<bool, String> {
+    start_torrent_engine_internal().await
+}
+
+pub async fn start_torrent_engine_internal() -> Result<bool, String> {
+    let health_client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_millis(700))
+        .build()
+        .unwrap_or_default();
+
+    if let Ok(res) = health_client.get("http://127.0.0.1:31337/api/health").send().await {
+        if res.status().is_success() {
+            println!("[Mamzouka] WebTorrent engine is already active and healthy on port 31337");
+            return Ok(true);
+        }
+    }
+
+    if ENGINE_STARTING
+        .compare_exchange(
+            false,
+            true,
+            std::sync::atomic::Ordering::SeqCst,
+            std::sync::atomic::Ordering::SeqCst,
+        )
+        .is_err()
+    {
+        for _ in 0..10 {
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+            if let Ok(res) = health_client.get("http://127.0.0.1:31337/api/health").send().await {
+                if res.status().is_success() {
+                    return Ok(true);
+                }
+            }
+        }
+        return Ok(false);
+    }
+
+    let exe_dir = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|d| d.to_path_buf()))
+        .unwrap_or_else(|| std::path::PathBuf::from("."));
+
+    let cur_dir = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+    let local_app_data = dirs::data_local_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
+
+    let candidate_paths = [
+        // Installed app locations
+        exe_dir.join("engine").join("torrent-server.js"),
+        exe_dir.join("torrent-server.js"),
+        exe_dir.join("resources").join("engine").join("torrent-server.js"),
+        exe_dir.join("resources").join("torrent-server.js"),
+        exe_dir.join("_up_").join("torrent-server.js"),
+        local_app_data.join("MamzoukaStream").join("engine").join("torrent-server.js"),
+        local_app_data.join("com.mamzouka.stream").join("engine").join("torrent-server.js"),
+        // Dev / repository locations
+        cur_dir.join("torrent-server.js"),
+        cur_dir.join("engine").join("torrent-server.js"),
+        exe_dir.join("../../../torrent-server.js"),
+        exe_dir.join("../../torrent-server.js"),
+        exe_dir.join("../torrent-server.js"),
+        std::path::PathBuf::from("torrent-server.js"),
+    ];
+
+    let mut script_path = None;
+    for path in &candidate_paths {
+        if path.exists() {
+            script_path = Some(path.clone());
+            break;
+        }
+    }
+
+    let Some(path) = script_path else {
+        eprintln!("[Mamzouka] torrent-server.js not found in candidate paths!");
+        return Err("torrent-server.js not found".to_string());
+    };
+
+    println!("[Mamzouka] Starting WebTorrent Node stream engine from: {:?}", path);
+
+    let node_candidates = [
+        // Bundled / portable node first
+        exe_dir.join("engine").join("node.exe").to_string_lossy().to_string(),
+        exe_dir.join("node.exe").to_string_lossy().to_string(),
+        local_app_data.join("MamzoukaStream").join("engine").join("node.exe").to_string_lossy().to_string(),
+        local_app_data.join("com.mamzouka.stream").join("engine").join("node.exe").to_string_lossy().to_string(),
+        // System node paths
+        r"C:\Program Files\nodejs\node.exe".to_string(),
+        r"C:\Program Files (x86)\nodejs\node.exe".to_string(),
+        "node".to_string(),
+    ];
+
+    let mut spawned = false;
+    for node_bin in &node_candidates {
+        let node_path = std::path::Path::new(node_bin);
+        if (node_bin.contains('\\') || node_bin.contains('/')) && !node_path.exists() {
+            continue;
+        }
+
+        let mut cmd = std::process::Command::new(node_bin);
+        cmd.arg(&path);
+        if let Some(parent) = path.parent() {
+            cmd.current_dir(parent);
+        }
+        if let Some(ff) = crate::assets::local_ffmpeg_path() {
+            cmd.env("MAMZOUKA_FFMPEG", ff);
+        }
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+        }
+
+        cmd.stdin(std::process::Stdio::null());
+
+        let log_path = if let Some(parent) = path.parent() {
+            parent.join("engine.log")
+        } else {
+            exe_dir.join("engine.log")
+        };
+
+        if let Ok(log_file) = std::fs::OpenOptions::new().create(true).write(true).truncate(true).open(&log_path) {
+            if let Ok(err_file) = log_file.try_clone() {
+                cmd.stdout(log_file);
+                cmd.stderr(err_file);
+            } else {
+                cmd.stdout(std::process::Stdio::null());
+                cmd.stderr(std::process::Stdio::null());
+            }
+        } else {
+            cmd.stdout(std::process::Stdio::null());
+            cmd.stderr(std::process::Stdio::null());
+        }
+
+        match cmd.spawn() {
+            Ok(child) => {
+                println!("[Mamzouka] WebTorrent spawned successfully using {}", node_bin);
+                if let Ok(mut lock) = NODE_CHILD.lock() {
+                    *lock = Some(child);
+                }
+                spawned = true;
+                break;
+            }
+            Err(e) => {
+                eprintln!("[Mamzouka] Failed to spawn {}: {}", node_bin, e);
+            }
+        }
+    }
+
+    if !spawned {
+        return Err("Failed to spawn node process from any candidate path".to_string());
+    }
+
+    for _ in 0..10 {
+        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+        if let Ok(res) = health_client.get("http://127.0.0.1:31337/api/health").send().await {
+            if res.status().is_success() {
+                println!("[Mamzouka] WebTorrent engine is now healthy on port 31337");
+                ENGINE_STARTING.store(false, std::sync::atomic::Ordering::SeqCst);
+                return Ok(true);
+            }
+        }
+    }
+
+    ENGINE_STARTING.store(false, std::sync::atomic::Ordering::SeqCst);
+    Ok(true)
+}
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let storage = Arc::new(storage::StorageManager::new());
     let torrents = Arc::new(torrents::TorrentClient::new());
     let livetv = Arc::new(livetv::LiveTvManager::new());
 
-    // Launch WebTorrent node streaming engine & Axum local server in background
-    tauri::async_runtime::spawn(async move {
-        let exe_dir = std::env::current_exe()
-            .ok()
-            .and_then(|p| p.parent().map(|d| d.to_path_buf()))
-            .unwrap_or_else(|| std::path::PathBuf::from("."));
-
-        let cur_dir = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
-        let candidate_paths = [
-            // Layer 0 — installer/first-run engine dir (node.exe + full deps).
-            exe_dir.join("engine").join("torrent-server.js"),
-            exe_dir.join("resources").join("engine").join("torrent-server.js"),
-            exe_dir.join("torrent-server.js"),
-            exe_dir.join("resources").join("torrent-server.js"),
-            exe_dir.join("../../../torrent-server.js"),
-            exe_dir.join("../../torrent-server.js"),
-            exe_dir.join("../torrent-server.js"),
-            cur_dir.join("torrent-server.js"),
-            cur_dir.join("../torrent-server.js"),
-            std::path::PathBuf::from("torrent-server.js"),
-            std::path::PathBuf::from("../torrent-server.js"),
-        ];
-
-        let mut script_path = None;
-        for path in &candidate_paths {
-            if path.exists() {
-                script_path = Some(path.clone());
-                break;
-            }
-        }
-
-        let mut started = false;
-        let health_client = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_millis(800))
-            .build()
-            .unwrap_or_default();
-
-        if let Ok(res) = health_client.get("http://127.0.0.1:31337/api/health").send().await {
-            if res.status().is_success() {
-                println!("[Mamzouka] WebTorrent engine is already active and healthy on port 31337");
-                started = true;
-            }
-        }
-
-        if !started {
-            if let Some(path) = script_path {
-                println!("[Mamzouka] Starting WebTorrent Node stream engine from: {:?}", path);
-                let node_candidates = [
-                    // Bundled portable node first (single-exe distribution).
-                    exe_dir.join("engine").join("node.exe").to_string_lossy().to_string(),
-                    exe_dir.join("resources").join("engine").join("node.exe").to_string_lossy().to_string(),
-                    "node".to_string(),
-                    r"C:\Program Files\nodejs\node.exe".to_string(),
-                    r"C:\Program Files (x86)\nodejs\node.exe".to_string(),
-                    exe_dir.join("node.exe").to_string_lossy().to_string(),
-                    exe_dir.join("resources").join("node.exe").to_string_lossy().to_string(),
-                ];
-
-                for node_bin in &node_candidates {
-                    let mut cmd = std::process::Command::new(node_bin);
-                    cmd.arg(&path);
-                    if let Some(parent) = path.parent() {
-                        cmd.current_dir(parent);
-                    }
-                    // Point the engine at the lazily-downloaded ffmpeg, if any.
-                    if let Some(ff) = crate::assets::local_ffmpeg_path() {
-                        cmd.env("MAMZOUKA_FFMPEG", ff);
-                    }
-                    #[cfg(windows)]
-                    {
-                        use std::os::windows::process::CommandExt;
-                        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
-                    }
-                    if let Ok(child) = cmd.spawn() {
-                        println!("[Mamzouka] WebTorrent spawned successfully using {}", node_bin);
-                        if let Ok(mut lock) = NODE_CHILD.lock() {
-                            *lock = Some(child);
-                        }
-                        started = true;
-                        break;
-                    }
-                }
-                if !started {
-                    eprintln!("[Mamzouka] Failed to spawn node process from any candidate path");
-                }
-            } else {
-                eprintln!("[Mamzouka] torrent-server.js not found in candidate paths!");
-            }
-        }
-
-        match server::start_local_server().await {
-            Ok(port) => println!("[Mamzouka] Local streaming server listening on port {}", port),
-            Err(e) => eprintln!("[Mamzouka] Failed to start local server: {}", e),
-        }
-    });
-
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .setup(|_app| {
+            tauri::async_runtime::spawn(async move {
+                let _ = start_torrent_engine_internal().await;
+                match server::start_local_server().await {
+                    Ok(port) => println!("[Mamzouka] Local streaming server listening on port {}", port),
+                    Err(e) => eprintln!("[Mamzouka] Failed to start local server: {}", e),
+                }
+            });
+            Ok(())
+        })
         .manage(AppState {
             storage,
             torrents,
@@ -752,6 +836,7 @@ pub fn run() {
             get_policy_status,
             ensure_engine_assets,
             engine_status,
+            start_torrent_engine,
             download_ffmpeg,
             open_in_vlc,
             open_external_url,
