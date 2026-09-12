@@ -1,6 +1,6 @@
 [package]
 name = "mamzouka"
-version = "1.0.0"
+version = "2.0.0"
 description = "Mamzouka Stream - Desktop Streaming App"
 authors = ["Mamzouka"]
 edition = "2021"

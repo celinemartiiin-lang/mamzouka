@@ -20,12 +20,12 @@ window.MAMZOUKA_UPDATE_CONFIG = {
   // Immediate emergency kill switch (locks app right now for testing or forced sunset)
   forceLock: false,
   // Expiry date format (YYYY-MM-DD) - blocks app on or after this date at 23:59:59
-  expiryDate: '2026-10-01',
+  expiryDate: '2027-01-01',
   // Official Telegram channel or download URL
   telegramUrl: 'https://t.me/mamzouka_official',
   // Version identifiers
-  currentVersion: '1.0.0',
-  newVersion: '2.0.0',
+  currentVersion: '2.0.0',
+  newVersion: '2.1.0',
   // Localized texts (Arabic & English)
   titleAr: 'تحديث إجباري متوفر 🚀',
   titleEn: 'Critical Update Required',

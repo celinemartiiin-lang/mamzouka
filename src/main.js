@@ -826,10 +826,10 @@ function getEffectiveUpdateConfig() {
   const defaults = {
     enabled: true,
     forceLock: false,
-    expiryDate: '2026-10-01',
+    expiryDate: '2027-01-01',
     telegramUrl: 'https://t.me/mamzouka_official',
-    currentVersion: '1.0.0',
-    newVersion: '2.0.0',
+    currentVersion: '2.0.0',
+    newVersion: '2.1.0',
     titleAr: 'تحديث إجباري متوفر 🚀',
     titleEn: 'Critical Update Required',
     messageAr: 'انتهت صلاحية هذه النسخة من التطبيق. لضمان استمرار عمل سيرفرات البث والقنوات بدون تقطيع، يُرجى تحميل النسخة الجديدة من قناتنا الرسمية على تيليغرام.',
@@ -5351,7 +5351,7 @@ function setupEventListeners() {
         let ffmpeg = null;
         try { ffmpeg = await invoke('check_ffmpeg'); } catch (e) { ffmpeg = 'missing: ' + e; }
         const payload = {
-          app: 'MamzoukaStream 1.0.0', exported_at: new Date().toISOString(),
+          app: 'MamzoukaStream 2.0.0', exported_at: new Date().toISOString(),
           lang: getCurrentLang(), tmdb_lang: getTmdbLanguage(),
           engine, ffmpeg,
           errors: errorLog.slice(-60),
