@@ -1,0 +1,21 @@
+{
+  "name": "mamzouka-stream",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "secure": "node scripts/secure-frontend.mjs",
+    "dev": "node scripts/secure-frontend.mjs && tauri dev",
+    "build": "node scripts/secure-frontend.mjs && tauri build",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "javascript-obfuscator": "^5.7.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "webtorrent": "^3.0.21"
+  }
+}
