@@ -634,6 +634,7 @@ function initElements() {
     // Ads System Elements
     prerollAdOverlay: document.getElementById('preroll-ad-overlay'),
     prerollVideo: document.getElementById('preroll-video'),
+    prerollHtmlFrame: document.getElementById('preroll-html-frame'),
     prerollAdTitle: document.getElementById('preroll-ad-title'),
     btnPrerollVisit: document.getElementById('btn-preroll-visit'),
     btnPrerollSkip: document.getElementById('btn-preroll-skip'),
@@ -1680,12 +1681,15 @@ async function tryTriggerPopunder(bypassCap = false) {
   }
 }
 
-// Pre-Roll Video Ad (5-second countdown with Skip Ad button; skipped in first 30s of session)
+// Pre-Roll Ad (Supports HTML/JS ad codes or MP4 video; 5-second countdown with Skip Ad button)
 function handlePreRollAd(isDirectTest = false) {
   return new Promise(async (resolve) => {
     if (!isDirectTest && isAdsGracePeriod()) return resolve(true); // calm start
     const cfg = getEffectiveAdsConfig();
-    if (!cfg.enabled || !cfg.preroll || !cfg.preroll.enabled || !cfg.preroll.videoUrl || !el.prerollAdOverlay || !el.prerollVideo) {
+    const hasHtml = !!(cfg.preroll && cfg.preroll.htmlCode && cfg.preroll.htmlCode.trim());
+    const hasVideo = !!(cfg.preroll && cfg.preroll.videoUrl);
+
+    if (!cfg.enabled || !cfg.preroll || !cfg.preroll.enabled || (!hasHtml && !hasVideo) || !el.prerollAdOverlay) {
       return resolve(true);
     }
 
@@ -1698,6 +1702,7 @@ function handlePreRollAd(isDirectTest = false) {
 
     const overlay = el.prerollAdOverlay;
     const video = el.prerollVideo;
+    const htmlFrame = el.prerollHtmlFrame || document.getElementById('preroll-html-frame');
     const skipBtn = el.btnPrerollSkip;
     const skipText = el.prerollSkipText;
     const titleElem = el.prerollAdTitle;
@@ -1714,36 +1719,84 @@ function handlePreRollAd(isDirectTest = false) {
     // Show overlay
     overlay.style.display = 'flex';
 
-    // Start muted for guaranteed 100% WebView2 autoplay compliance
-    video.muted = true;
-    if (soundText) soundText.textContent = t('ads.soundOn', '🔊 Enable sound');
+    if (hasHtml && (cfg.preroll.type === 'html' || !hasVideo)) {
+      // 1. Render HTML / JavaScript / Iframe Ad Code
+      if (video) {
+        video.style.display = 'none';
+        try { video.pause(); } catch (e) {}
+      }
+      if (soundBtn) soundBtn.style.display = 'none';
+      if (htmlFrame) {
+        htmlFrame.style.display = 'block';
+        const docHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base target="_blank">
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: sans-serif; }
+    a { color: #00d2ff; text-decoration: none; }
+  </style>
+</head>
+<body>
+  ${cfg.preroll.htmlCode}
+</body>
+</html>`;
+        htmlFrame.srcdoc = docHtml;
+      }
+    } else {
+      // 2. Render MP4 Video Ad
+      if (htmlFrame) htmlFrame.style.display = 'none';
+      if (video) video.style.display = 'block';
+      if (soundBtn) soundBtn.style.display = 'flex';
 
-    let currentUrlIndex = 0;
-    const testUrls = [cfg.preroll.videoUrl, ...FALLBACK_PREROLL_VIDEOS.filter((u) => u !== cfg.preroll.videoUrl)];
+      // Start muted for guaranteed 100% WebView2 autoplay compliance
+      if (video) video.muted = true;
+      if (soundText) soundText.textContent = t('ads.soundOn', '🔊 Enable sound');
 
-    const loadVideoSrc = (url) => {
-      video.src = url;
-      video.currentTime = 0;
-      video.load();
-      video.play().catch((err) => {
-        console.warn('[Mamzouka Ads] Play warning, ensuring muted:', err);
-        video.muted = true;
-        video.play().catch((err2) => {
-          console.warn('[Mamzouka Ads] Second play error:', err2);
+      let currentUrlIndex = 0;
+      const testUrls = [cfg.preroll.videoUrl, ...FALLBACK_PREROLL_VIDEOS.filter((u) => u !== cfg.preroll.videoUrl)];
+
+      const loadVideoSrc = (url) => {
+        if (!video) return;
+        video.src = url;
+        video.currentTime = 0;
+        video.load();
+        video.play().catch((err) => {
+          console.warn('[Mamzouka Ads] Play warning, ensuring muted:', err);
+          video.muted = true;
+          video.play().catch((err2) => {
+            console.warn('[Mamzouka Ads] Second play error:', err2);
+          });
         });
-      });
-    };
-
-    loadVideoSrc(testUrls[0]);
-
-    if (soundBtn) {
-      soundBtn.onclick = (e) => {
-        e.stopPropagation();
-        video.muted = !video.muted;
-        if (soundText) {
-          soundText.textContent = video.muted ? t('ads.soundOn', '🔊 Enable sound') : t('ads.soundOff', '🔇 Mute');
-        }
       };
+
+      loadVideoSrc(testUrls[0]);
+
+      if (video) {
+        video.onended = () => finishAd();
+        video.onerror = () => {
+          console.warn(`[Mamzouka Ads] Preroll video error on URL #${currentUrlIndex}`);
+          currentUrlIndex += 1;
+          if (currentUrlIndex < testUrls.length) {
+            loadVideoSrc(testUrls[currentUrlIndex]);
+          } else {
+            console.warn('[Mamzouka Ads] All preroll URLs failed, proceeding to video');
+            finishAd();
+          }
+        };
+      }
+
+      if (soundBtn && video) {
+        soundBtn.onclick = (e) => {
+          e.stopPropagation();
+          video.muted = !video.muted;
+          if (soundText) {
+            soundText.textContent = video.muted ? t('ads.soundOn', '🔊 Enable sound') : t('ads.soundOff', '🔇 Mute');
+          }
+        };
+      }
     }
 
     let remaining = cfg.preroll.skipDelaySeconds || 5;
@@ -1781,8 +1834,14 @@ function handlePreRollAd(isDirectTest = false) {
       if (finished) return;
       finished = true;
       if (countdownInterval) clearInterval(countdownInterval);
-      try { video.pause(); } catch (e) {}
-      video.removeAttribute('src');
+      if (video) {
+        try { video.pause(); } catch (e) {}
+        video.removeAttribute('src');
+      }
+      if (htmlFrame) {
+        try { htmlFrame.srcdoc = ''; htmlFrame.src = 'about:blank'; } catch (e) {}
+        htmlFrame.style.display = 'none';
+      }
       overlay.style.display = 'none';
       if (isDirectTest && el.playerView && !state.activeStream) {
         el.playerView.classList.remove('active');
@@ -1796,19 +1855,6 @@ function handlePreRollAd(isDirectTest = false) {
         finishAd();
       };
     }
-
-    video.onended = () => finishAd();
-
-    video.onerror = () => {
-      console.warn(`[Mamzouka Ads] Preroll video error on URL #${currentUrlIndex}`);
-      currentUrlIndex += 1;
-      if (currentUrlIndex < testUrls.length) {
-        loadVideoSrc(testUrls[currentUrlIndex]);
-      } else {
-        console.warn('[Mamzouka Ads] All preroll URLs failed, proceeding to video');
-        finishAd();
-      }
-    };
 
     if (visitBtn) {
       visitBtn.onclick = async (e) => {
@@ -1824,107 +1870,31 @@ function handlePreRollAd(isDirectTest = false) {
   });
 }
 
-// Initialize Ads Settings UI & Event Listeners
+// Initialize Ads System (Pre-rolls, Popunders, Social Bars / Global scripts)
 function initAdsSystem() {
   const cfg = getEffectiveAdsConfig();
 
-  if (el.settingAdsMasterEnabled) {
-    el.settingAdsMasterEnabled.checked = !!cfg.enabled;
-  }
-  if (el.settingAdsVideoUrl) {
-    el.settingAdsVideoUrl.value = cfg.preroll?.videoUrl || DEFAULT_PREROLL_VIDEO;
-  }
-  if (el.settingAdsSkipDelay) {
-    el.settingAdsSkipDelay.value = cfg.preroll?.skipDelaySeconds || 5;
-  }
-  if (el.settingAdsPopunderUrl) {
-    el.settingAdsPopunderUrl.value = cfg.popunder?.url || 'https://t.me/mamzouka_official';
-  }
-  if (el.settingAdsExcludedCountries) {
-    el.settingAdsExcludedCountries.value = (cfg.excludedCountries || []).join(', ');
-  }
-
-  if (el.adsStatusBadge) {
-    const L = getCurrentLang();
-    const onTxt = L === 'ar' ? 'الإعلانات شغالة' : L === 'fr' ? 'Pubs actives' : 'Ads Active';
-    const offTxt = L === 'ar' ? 'معطلة' : L === 'fr' ? 'Désactivées' : 'Disabled';
-    if (cfg.enabled) {
-      el.adsStatusBadge.textContent = onTxt;
-      el.adsStatusBadge.style.background = 'rgba(34, 197, 94, 0.2)';
-      el.adsStatusBadge.style.color = '#4ade80';
-      el.adsStatusBadge.style.borderColor = 'rgba(34, 197, 94, 0.4)';
-    } else {
-      el.adsStatusBadge.textContent = offTxt;
-      el.adsStatusBadge.style.background = 'rgba(239, 68, 68, 0.2)';
-      el.adsStatusBadge.style.color = '#f87171';
-      el.adsStatusBadge.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+  // Inject global ad script/code if configured (Social Bar / In-Page Push / Native ad snippet)
+  if (cfg.enabled && cfg.globalAdCode && cfg.globalAdCode.trim() && !document.getElementById('mamzouka-global-ad-slot')) {
+    try {
+      const slot = document.createElement('div');
+      slot.id = 'mamzouka-global-ad-slot';
+      slot.style.position = 'fixed';
+      slot.style.bottom = '0';
+      slot.style.right = '0';
+      slot.style.zIndex = '99999';
+      slot.style.pointerEvents = 'auto';
+      document.body.appendChild(slot);
+      const range = document.createRange();
+      range.selectNode(slot);
+      const fragment = range.createContextualFragment(cfg.globalAdCode);
+      slot.appendChild(fragment);
+    } catch (e) {
+      console.warn('[Mamzouka Ads] Global ad snippet error:', e);
     }
   }
 
-  if (el.btnSaveAdsConfig && !el.btnSaveAdsConfig.dataset.bound) {
-    el.btnSaveAdsConfig.dataset.bound = 'true';
-    el.btnSaveAdsConfig.addEventListener('click', () => {
-      const isMaster = el.settingAdsMasterEnabled ? el.settingAdsMasterEnabled.checked : true;
-      const vUrl = (el.settingAdsVideoUrl && el.settingAdsVideoUrl.value.trim()) || DEFAULT_PREROLL_VIDEO;
-      const sDelay = (el.settingAdsSkipDelay && parseInt(el.settingAdsSkipDelay.value, 10)) || 5;
-      const pUrl = (el.settingAdsPopunderUrl && el.settingAdsPopunderUrl.value.trim()) || 'https://t.me/mamzouka_official';
-      const rawCountries = el.settingAdsExcludedCountries ? el.settingAdsExcludedCountries.value : '';
-      const countries = rawCountries.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
-
-      const updated = {
-        ...cfg,
-        enabled: isMaster,
-        preroll: {
-          ...cfg.preroll,
-          videoUrl: vUrl,
-          skipDelaySeconds: sDelay,
-        },
-        popunder: {
-          ...cfg.popunder,
-          url: pUrl,
-        },
-        excludedCountries: countries,
-        geoCheckEnabled: countries.length > 0,
-      };
-
-      localStorage.setItem('mamzouka_ads_config', JSON.stringify(updated));
-      alert(t('dlg.expirySaved', '✅ Saved!'));
-      initAdsSystem();
-    });
-  }
-
-  if (el.btnTestPrerollAd && !el.btnTestPrerollAd.dataset.bound) {
-    el.btnTestPrerollAd.dataset.bound = 'true';
-    el.btnTestPrerollAd.addEventListener('click', () => {
-      handlePreRollAd(true);
-    });
-  }
-
-  if (el.btnTestPopunderLink && !el.btnTestPopunderLink.dataset.bound) {
-    el.btnTestPopunderLink.dataset.bound = 'true';
-    el.btnTestPopunderLink.addEventListener('click', () => {
-      tryTriggerPopunder(true);
-      alert(t('dlg.adsPopOk', '✅ Pop-under fired!'));
-    });
-  }
-
-  if (el.btnResetPopunderTimer && !el.btnResetPopunderTimer.dataset.bound) {
-    el.btnResetPopunderTimer.dataset.bound = 'true';
-    el.btnResetPopunderTimer.addEventListener('click', () => {
-      localStorage.removeItem('mamzouka_last_popunder');
-      alert(t('dlg.resetPop', '🔄 24h timer reset'));
-    });
-  }
-
-  if (el.btnResetAdsConfig && !el.btnResetAdsConfig.dataset.bound) {
-    el.btnResetAdsConfig.dataset.bound = 'true';
-    el.btnResetAdsConfig.addEventListener('click', () => {
-      localStorage.removeItem('mamzouka_ads_config');
-      alert(t('dlg.adsDefaults', '🔄 Ads restored to defaults'));
-      initAdsSystem();
-    });
-  }
-
+  // Pop-under trigger on user interaction
   if (!window._mamzoukaPopunderListenerBound) {
     window._mamzoukaPopunderListenerBound = true;
     document.addEventListener('click', (e) => {

@@ -22,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' ipc: http://ipc.localhost; connect-src 'self' ipc: http://ipc.localhost https://api.themoviedb.org https://image.tmdb.org https://*.strem.fun https://iptv-org.github.io https://*.m3u8 https://*.mp3 http://127.0.0.1:* http://localhost:*; img-src 'self' asset: http://asset.localhost https://* data: blob:; media-src 'self' asset: http://asset.localhost https://* http://127.0.0.1:* http://localhost:* blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://*.vidsrc.* https://vidlink.pro https://player.autoembed.co https://www.2embed.cc https://www.youtube-nocookie.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+      "csp": "default-src 'self' ipc: http://ipc.localhost; connect-src 'self' ipc: http://ipc.localhost https://* http://127.0.0.1:* http://localhost:*; img-src 'self' asset: http://asset.localhost https://* data: blob:; media-src 'self' asset: http://asset.localhost https://* http://127.0.0.1:* http://localhost:* blob:; style-src 'self' 'unsafe-inline' https://* https://fonts.googleapis.com; font-src 'self' https://* https://fonts.gstatic.com data:; frame-src 'self' https://* data: blob: http://*; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*"
     }
   },
   "bundle": {
