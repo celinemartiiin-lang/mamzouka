@@ -1533,13 +1533,6 @@ const FALLBACK_PREROLL_VIDEOS = [
 
 function getEffectiveAdsConfig() {
   const fileConfig = window.MAMZOUKA_ADS_CONFIG || {};
-  let storageConfig = {};
-  try {
-    const override = localStorage.getItem('mamzouka_ads_config');
-    if (override) {
-      storageConfig = JSON.parse(override);
-    }
-  } catch (e) {}
 
   const defaults = {
     enabled: true,
@@ -1561,16 +1554,13 @@ function getEffectiveAdsConfig() {
 
   let merged = {
     ...defaults,
-    ...storageConfig,
     ...fileConfig,
     preroll: {
       ...defaults.preroll,
-      ...(storageConfig.preroll || {}),
       ...(fileConfig.preroll || {}),
     },
     popunder: {
       ...defaults.popunder,
-      ...(storageConfig.popunder || {}),
       ...(fileConfig.popunder || {}),
     },
   };
