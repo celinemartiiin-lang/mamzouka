@@ -222,7 +222,19 @@ window.MAMZOUKA_I18N = {
       dlFfmpegConfirm: 'Download ffmpeg (~80MB, one time, for MKV convert)?'
     },
     subtitles: { off: 'Off', external: 'Load external .srt' },
-    ads: { skipIn: 'Skip ad in {n}s', skipNow: 'Skip Ad ⏭', soundOn: '🔊 Enable sound', soundOff: '🔇 Mute' }
+    ads: { skipIn: 'Skip ad in {n}s', skipNow: 'Skip Ad ⏭', soundOn: '🔊 Enable sound', soundOff: '🔇 Mute' },
+    legal: {
+      tag: '⚖️ Legal Disclaimer',
+      sub: 'Decentralized P2P Search Bridge',
+      text: 'Mamzouka Stream does not host, upload, or broadcast any video files on its servers. The application operates solely as an independent client-side search bridge indexing publicly accessible P2P torrent links across the internet.',
+      detailsBtn: 'Legal Info',
+      closeTitle: 'Dismiss',
+      modalTitle: 'Legal Notice & Safe Harbor Architecture',
+      modalP1: 'Mamzouka Stream is a client-side media browser and search indexer. It functions in full compliance with distributed P2P standards.',
+      modalP2: '• Zero Media Hosting: None of the videos, audio, or television broadcasts shown in this app are hosted on, uploaded to, or stored on Mamzouka servers.\n• P2P Search Bridge: The application only fetches public metadata and magnet references available across public internet trackers (such as Torrentio, YTS, and IPTV-org).\n• Client-Side Processing: All streaming connections occur directly peer-to-peer between your local device and the P2P swarm, or through third-party debrid providers configured by the user.\n• Copyright Notice: We respect intellectual property rights. Users are solely responsible for ensuring they comply with local copyright laws regarding the content they access.',
+      modalFooter: 'No copyrighted content is broadcast or hosted by Mamzouka Stream developers.',
+      modalClose: 'Understood'
+    }
   },
   fr: {
     nav: { discover: 'Découvrir', movies: 'Films', tv: 'Séries', anime: 'Anime', livetv: 'TV en direct', radio: 'Radio en direct', youtube: 'Hub YouTube', twitch: 'Jeux Twitch', addons: 'Extensions', watchlist: 'Ma liste', downloads: 'Téléchargements', settings: 'Paramètres' },
@@ -442,7 +454,19 @@ window.MAMZOUKA_I18N = {
       dlFfmpegConfirm: 'Télécharger ffmpeg (~80Mo, une fois, pour convertir MKV) ?'
     },
     subtitles: { off: 'Désactivés', external: 'Charger un .srt externe' },
-    ads: { skipIn: 'Passer dans {n}s', skipNow: 'Passer ⏭', soundOn: '🔊 Activer le son', soundOff: '🔇 Couper le son' }
+    ads: { skipIn: 'Passer dans {n}s', skipNow: 'Passer ⏭', soundOn: '🔊 Activer le son', soundOff: '🔇 Couper le son' },
+    legal: {
+      tag: '⚖️ Avis Juridique',
+      sub: 'Passerelle de recherche P2P décentralisée',
+      text: 'Mamzouka Stream n\'héberge, ne téléverse et ne diffuse aucun fichier vidéo sur ses serveurs. L\'application fonctionne exclusivement comme une passerelle de recherche indépendante et un client P2P indexant des liens torrents publics sur Internet.',
+      detailsBtn: 'En savoir plus',
+      closeTitle: 'Fermer',
+      modalTitle: 'Avis Juridique & Architecture P2P',
+      modalP1: 'Mamzouka Stream est un outil d\'indexation et un client de lecture torrent local. Il fonctionne comme un navigateur ou lecteur multimédia neutre.',
+      modalP2: '• Aucun hébergement : Aucun film, série ou flux TV n\'est hébergé, stocké ou transmis depuis nos serveurs.\n• Passerelle P2P publique : L\'application interroge uniquement des métadonnées et liens magnets publics disponibles sur le réseau Internet (via des indexeurs tiers comme Torrentio, YTS, IPTV-org).\n• Connexion directe poste à poste : Le streaming s\'effectue directement en P2P entre votre appareil et le réseau décentralisé, sans intermédiaire serveur.\n• Propriété intellectuelle : Nous respectons les droits d\'auteur. Chaque utilisateur est responsable de vérifier la conformité des contenus consultés avec la législation de son pays.',
+      modalFooter: 'Aucun contenu multimédia n\'est hébergé ou envoyé sur les serveurs Mamzouka.',
+      modalClose: 'J\'ai compris'
+    }
   },
   ar: {
     nav: { discover: 'اكتشف', movies: 'أفلام', tv: 'مسلسلات', anime: 'أنمي', livetv: 'تلفاز مباشر', radio: 'راديو', youtube: 'يوتيوب', twitch: 'ألعاب', addons: 'إضافات', watchlist: 'قائمة المشاهدة', downloads: 'التحميلات', settings: 'الإعدادات' },
@@ -662,7 +686,19 @@ window.MAMZOUKA_I18N = {
       dlFfmpegConfirm: 'تحميل ffmpeg (~80MB، مرة واحدة، لتحويل MKV)؟'
     },
     subtitles: { off: 'بدون ترجمة', external: 'تحميل ملف .srt خارجي' },
-    ads: { skipIn: 'تخطي الإعلان بعد {n} ثوانٍ', skipNow: 'تخطي الإعلان ⏭', soundOn: '🔊 تشغيل الصوت', soundOff: '🔇 كتم الصوت' }
+    ads: { skipIn: 'تخطي الإعلان بعد {n} ثوانٍ', skipNow: 'تخطي الإعلان ⏭', soundOn: '🔊 تشغيل الصوت', soundOff: '🔇 كتم الصوت' },
+    legal: {
+      tag: '⚖️ إخلاء مسؤولية قانوني',
+      sub: 'جسر بحث P2P لامركزي ومحايد',
+      text: 'مامزوكا ستريم لا يستضيف ولا يرفع ولا يبث أي ملفات فيديو أو وسائط على خوادمه إطلاقاً. التطبيق يعمل حصرياً كجسر تقني ومحرك بحث محايد لجلب روابط التورنت المتاحة للعموم على شبكة الإنترنت.',
+      detailsBtn: 'التفاصيل القانونية',
+      closeTitle: 'إغلاق',
+      modalTitle: 'الإشعار القانوني وطبيعة عمل البرنامج',
+      modalP1: 'برنامج Mamzouka Stream هو مشغل وسائط وأداة بحث تعتمد على بروتوكول التورنت اللامركزي (P2P Client)، تماماً مثل برامج التصفح ومشغلات الفيديو المفتوحة.',
+      modalP2: '• عدم استضافة أي محتوى: لا نقوم بتخزين أو رفع أو إعادة بث أي فيلم أو مسلسل أو قناة على أي سيرفر خاص بنا.\n• مجرد جسر بحث (Search Bridge): التطبيق يستعلم فقط عن الروابط العامة والماجنت (Magnet Links) المتوفرة علناً على شبكة الإنترنت ومصادر الطرف الثالث.\n• اتصال مباشر (Peer-to-Peer): البث يتم مباشرة بين جهازك وشبكة التورنت العامة دون أن يمر أي ملف عبر سيرفرات التطبيق.\n• حقوق الملكية الفكرية: نحترم حقوق النشر، والمستخدم مسؤول بمفرده عن مدى مشروعية المحتوى الذي يختاره وفقاً لقوانين بلده.',
+      modalFooter: 'لا يتم رفع أو استضافة أي ملفات وسائط على أي خادم تابع لمطوري مامزوكا ستريم.',
+      modalClose: 'فهمت ذلك'
+    }
   }
 };
 window.MAMZOUKA_LANGS = [

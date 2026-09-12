@@ -185,6 +185,24 @@
       <div class="content-scroll" id="content-scroll">
         <!-- Discover View -->
         <section id="view-discover">
+          <!-- Legal Disclaimer Banner -->
+          <div class="legal-disclaimer-banner" id="legal-disclaimer-banner">
+            <div class="legal-disclaimer-icon-wrap">
+              <span class="legal-disclaimer-icon">⚖️</span>
+            </div>
+            <div class="legal-disclaimer-body">
+              <div class="legal-disclaimer-header">
+                <span class="legal-disclaimer-tag" data-i18n="legal.tag">⚖️ Legal Disclaimer</span>
+                <span class="legal-disclaimer-sub" data-i18n="legal.sub">Decentralized P2P Search Bridge</span>
+              </div>
+              <p class="legal-disclaimer-text" data-i18n="legal.text">Mamzouka Stream does not host, upload, or broadcast any video files on its servers. The application operates solely as an independent client-side search bridge indexing publicly accessible P2P torrent links across the internet.</p>
+            </div>
+            <div class="legal-disclaimer-actions">
+              <button class="btn-legal-details" id="btn-legal-details" data-i18n="legal.detailsBtn">Legal Info</button>
+              <button class="btn-legal-close" id="btn-legal-close" data-i18n-title="legal.closeTitle" title="Dismiss">✕</button>
+            </div>
+          </div>
+
           <!-- Hero Banner -->
           <div class="hero-banner" id="hero-banner">
             <div class="hero-overlay"></div>
@@ -1719,6 +1737,35 @@
         <div style="display:flex; gap:10px; justify-content:center;">
           <button id="btn-resume-yes" class="btn-primary" style="padding:8px 18px;">▶ <span data-i18n="ui.resumeYes">Resume from</span> <span id="resume-time-label">00:00</span></button>
           <button id="btn-resume-no" class="btn-secondary" style="padding:8px 14px;" data-i18n="ui.resumeNo">↺ Start Over</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal Disclaimer Full Modal -->
+    <div class="modal-backdrop" id="legal-modal" style="display: none; align-items: center; justify-content: center; z-index: 99999;">
+      <div class="modal-container" style="max-width: 620px; width: 92%; border: 1px solid rgba(255,255,255,0.12); background: var(--bg-glass-heavy); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.85); overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid var(--border-glass);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 1.6rem;">⚖️</span>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0;" data-i18n="legal.modalTitle">Legal Notice & Safe Harbor Architecture</h3>
+          </div>
+          <button class="modal-close-btn" id="legal-modal-close-btn" style="position: static; width: 34px; height: 34px; border-radius: 50%;">✕</button>
+        </div>
+        <div style="padding: 22px 24px; max-height: 60vh; overflow-y: auto; font-size: 0.9rem; line-height: 1.7; color: var(--text-secondary);">
+          <p style="margin-bottom: 14px; color: var(--text-primary); font-weight: 700; font-size: 0.95rem;" data-i18n="legal.modalP1">Mamzouka Stream is a client-side media browser and search indexer. It functions in full compliance with distributed P2P standards.</p>
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; white-space: pre-line; font-size: 0.86rem; color: #cbd5e1;" data-i18n="legal.modalP2">
+• Zero Media Hosting: None of the videos, audio, or television broadcasts shown in this app are hosted on, uploaded to, or stored on Mamzouka servers.
+• P2P Search Bridge: The application only fetches public metadata and magnet references available across public internet trackers (such as Torrentio, YTS, and IPTV-org).
+• Client-Side Processing: All streaming connections occur directly peer-to-peer between your local device and the P2P swarm, or through third-party debrid providers configured by the user.
+• Copyright Notice: We respect intellectual property rights. Users are solely responsible for ensuring they comply with local copyright laws regarding the content they access.
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+            <span>🛡️</span>
+            <span data-i18n="legal.modalFooter">No copyrighted content is broadcast or hosted by Mamzouka Stream developers.</span>
+          </div>
+        </div>
+        <div style="padding: 16px 24px; border-top: 1px solid var(--border-glass); display: flex; justify-content: flex-end; background: rgba(0,0,0,0.2);">
+          <button class="btn-primary" id="legal-modal-ok-btn" style="padding: 10px 24px; font-weight: 700; border-radius: 12px;" data-i18n="legal.modalClose">Understood</button>
         </div>
       </div>
     </div>

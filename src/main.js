@@ -5143,6 +5143,52 @@ async function loadAnalytics(){
 // Event Listeners Setup
 // ==========================================================================
 function setupEventListeners() {
+  // Legal Disclaimer Banner & Modal
+  const legalBanner = document.getElementById('legal-disclaimer-banner');
+  const btnLegalDetails = document.getElementById('btn-legal-details');
+  const btnLegalClose = document.getElementById('btn-legal-close');
+  const legalModal = document.getElementById('legal-modal');
+  const legalModalClose = document.getElementById('legal-modal-close-btn');
+  const legalModalOk = document.getElementById('legal-modal-ok-btn');
+
+  if (legalBanner && sessionStorage.getItem('mamzouka_legal_dismissed') === '1') {
+    legalBanner.style.display = 'none';
+  }
+
+  if (btnLegalClose && legalBanner) {
+    btnLegalClose.addEventListener('click', () => {
+      legalBanner.style.transition = 'all 0.3s ease';
+      legalBanner.style.opacity = '0';
+      legalBanner.style.transform = 'translateY(-8px)';
+      setTimeout(() => {
+        legalBanner.style.display = 'none';
+        sessionStorage.setItem('mamzouka_legal_dismissed', '1');
+      }, 300);
+    });
+  }
+
+  const openLegalModal = () => {
+    if (legalModal) {
+      legalModal.style.display = 'flex';
+      applyLang(getCurrentLang());
+    }
+  };
+
+  const closeLegalModal = () => {
+    if (legalModal) {
+      legalModal.style.display = 'none';
+    }
+  };
+
+  if (btnLegalDetails) btnLegalDetails.addEventListener('click', openLegalModal);
+  if (legalModalClose) legalModalClose.addEventListener('click', closeLegalModal);
+  if (legalModalOk) legalModalOk.addEventListener('click', closeLegalModal);
+  if (legalModal) {
+    legalModal.addEventListener('click', (e) => {
+      if (e.target === legalModal) closeLegalModal();
+    });
+  }
+
   // Stream Filter Pills
   if (el.streamFilters) {
     el.streamFilters.querySelectorAll('.filter-pill').forEach((pill) => {
