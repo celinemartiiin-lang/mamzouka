@@ -236,7 +236,7 @@ function applyLang(lang){
     try {
       const grid = document.querySelector(gridSel);
       if (!grid) return;
-      const header = grid.previousElementSibling;
+      const header = (grid.closest('.carousel-container') || grid).previousElementSibling;
       const titleEl = header ? header.querySelector('.section-title') : null;
       const val = t(key, '');
       if (titleEl && val) titleEl.textContent = val;
@@ -441,6 +441,7 @@ function initElements() {
 
     // Hero Banner
     heroBanner: document.getElementById('hero-banner'),
+    heroPoster: document.getElementById('hero-poster'),
     heroTitle: document.getElementById('hero-title'),
     heroRating: document.getElementById('hero-rating'),
     heroYear: document.getElementById('hero-year'),
@@ -1926,12 +1927,12 @@ async function loadDiscoverContent() {
     el.trendingGrid.innerHTML = '<div class="spinner"></div>';
   }
   
-  // 1. Trending Items (Preview Top 5)
+  // 1. Trending Items (Featured + 20 items in carousel)
   invoke('get_trending', { mediaType: 'all', timeWindow: 'day', language: getTmdbLanguage() })
     .then((trending) => {
       if (trending && trending.length > 0) {
         renderHero(trending[0]);
-        if (el.trendingGrid) renderGrid(el.trendingGrid, trending.slice(0, 5));
+        if (el.trendingGrid) renderGrid(el.trendingGrid, trending.slice(0, 20));
       } else if (el.trendingGrid) {
         el.trendingGrid.innerHTML = '<div style="color: var(--text-muted); padding: 20px;">' + escapeHtml(t('ui.noTrending', 'No trending items available.')) + '</div>';
       }
@@ -1946,29 +1947,29 @@ async function loadDiscoverContent() {
       }
     });
 
-  // 2. Popular Movies (Preview Top 5)
+  // 2. Popular Movies (20 items in carousel)
   invoke('discover_media', { tmdb_language: getTmdbLanguage(), mediaType: 'movie',
     page: 1,
     genreId: null,
     sortBy: 'popularity.desc',
   }).then((popMovies) => {
     if (popMovies && popMovies.results && el.popularMoviesGrid) {
-      renderGrid(el.popularMoviesGrid, popMovies.results.slice(0, 5));
+      renderGrid(el.popularMoviesGrid, popMovies.results.slice(0, 20));
     }
   }).catch((e) => console.warn('Pop movies error:', e));
 
-  // 3. Popular TV (Preview Top 5)
+  // 3. Popular TV (20 items in carousel)
   invoke('discover_media', { tmdb_language: getTmdbLanguage(), mediaType: 'tv',
     page: 1,
     genreId: null,
     sortBy: 'popularity.desc',
   }).then((popTv) => {
     if (popTv && popTv.results && el.popularTvGrid) {
-      renderGrid(el.popularTvGrid, popTv.results.slice(0, 5));
+      renderGrid(el.popularTvGrid, popTv.results.slice(0, 20));
     }
   }).catch((e) => console.warn('Pop TV error:', e));
 
-  // 4. Anime (Preview Top 5)
+  // 4. Anime (20 items in carousel)
   invoke('discover_media', { tmdb_language: getTmdbLanguage(), mediaType: 'anime',
     page: 1,
     genreId: null,
@@ -1979,11 +1980,11 @@ async function loadDiscoverContent() {
     language: null,
   }).then((popAnime) => {
     if (popAnime && popAnime.results && el.homeAnimeGrid) {
-      renderGrid(el.homeAnimeGrid, popAnime.results.slice(0, 5));
+      renderGrid(el.homeAnimeGrid, popAnime.results.slice(0, 20));
     }
   }).catch((e) => console.warn('Pop Anime error:', e));
 
-  // 5. Arabic Cinema & Series (Preview Top 5)
+  // 5. Arabic Cinema & Series (20 items in carousel)
   invoke('discover_media', { tmdb_language: getTmdbLanguage(), mediaType: 'movie',
     page: 1,
     genreId: null,
@@ -1994,43 +1995,47 @@ async function loadDiscoverContent() {
     language: null,
   }).then((arabContent) => {
     if (arabContent && arabContent.results && el.homeArabicGrid) {
-      renderGrid(el.homeArabicGrid, arabContent.results.slice(0, 5));
+      renderGrid(el.homeArabicGrid, arabContent.results.slice(0, 20));
     }
   }).catch((e) => console.warn('Arab content error:', e));
 
-  // 6. Live Channels (Preview Top 6)
+  // 6. Live Channels (20 items in carousel)
   invoke('get_live_channels', {
     country: 'all',
     category: null,
     query: null,
   }).then((channels) => {
     if (channels && el.homeLiveTvGrid) {
-      renderLiveTvPreviewGrid(el.homeLiveTvGrid, channels.slice(0, 6));
+      renderLiveTvPreviewGrid(el.homeLiveTvGrid, channels.slice(0, 20));
     }
   }).catch((e) => console.warn('Live TV preview error:', e));
 }
 
 async function loadContinueWatching() {
   if (!el.continueWatchingGrid || !el.continueWatchingHeader) return;
+  const cwCarousel = document.getElementById('continue-watching-carousel');
   try {
     const history = await invoke('get_watch_history');
     if (!history || history.length === 0) {
       el.continueWatchingGrid.style.display = 'none';
       el.continueWatchingHeader.style.display = 'none';
+      if (cwCarousel) cwCarousel.style.display = 'none';
       return;
     }
     // Filter 5-90% progress
     const filtered = history.filter(h => {
       const pct = h.duration_sec > 0 ? (h.current_time_sec / h.duration_sec) * 100 : 0;
       return pct > 5 && pct < 90;
-    }).slice(0, 10);
+    }).slice(0, 18);
     if (filtered.length === 0) {
       el.continueWatchingGrid.style.display = 'none';
       el.continueWatchingHeader.style.display = 'none';
+      if (cwCarousel) cwCarousel.style.display = 'none';
       return;
     }
-    el.continueWatchingGrid.style.display = 'grid';
+    el.continueWatchingGrid.style.display = 'flex';
     el.continueWatchingHeader.style.display = 'flex';
+    if (cwCarousel) cwCarousel.style.display = 'block';
     el.continueWatchingGrid.innerHTML = filtered.map(item => {
       const pct = item.duration_sec > 0 ? Math.round((item.current_time_sec / item.duration_sec)*100) : 0;
       const poster = item.poster_url || 'https://via.placeholder.com/300x450/1e293b/ffffff?text=No+Poster';
@@ -2070,6 +2075,7 @@ async function loadContinueWatching() {
       el.btnClearHistory.onclick = async () => {
         el.continueWatchingGrid.style.display = 'none';
         el.continueWatchingHeader.style.display = 'none';
+        if (cwCarousel) cwCarousel.style.display = 'none';
       };
     }
     // Load recommendations for last watched
@@ -2079,13 +2085,20 @@ async function loadContinueWatching() {
 
 async function loadRecommendations(base){
   if(!el.recsGrid || !el.recsHeader) return;
+  const recsCarousel = document.getElementById('recs-carousel');
   try{
     const recs = await invoke('get_recommendations', { mediaType: base.media_type, id: base.media_id, language: getTmdbLanguage() });
-    if(!recs || recs.length===0){ el.recsGrid.style.display='none'; el.recsHeader.style.display='none'; return; }
+    if(!recs || recs.length===0){
+      el.recsGrid.style.display='none';
+      el.recsHeader.style.display='none';
+      if (recsCarousel) recsCarousel.style.display = 'none';
+      return;
+    }
     el.recsHeader.style.display='flex';
-    el.recsGrid.style.display='grid';
+    el.recsGrid.style.display='flex';
+    if (recsCarousel) recsCarousel.style.display = 'block';
     if(el.recsSubtitle) el.recsSubtitle.textContent = t('ui.basedOn', '— based on "{t}"').replace('{t}', base.title);
-    renderGrid(el.recsGrid, recs.slice(0,8));
+    renderGrid(el.recsGrid, recs.slice(0,18));
   }catch(e){ console.warn('Recs error', e); }
 }
 
@@ -2530,8 +2543,18 @@ function renderHero(item) {
 
   const backdrop = item.backdrop_url || item.poster_url || '';
   el.heroBanner.style.backgroundImage = `url('${backdrop}')`;
+  if (el.heroPoster) {
+    const posterSrc = (typeof getAdaptivePoster === 'function' ? getAdaptivePoster(item) : null) || item.poster_url || item.backdrop_url || '';
+    if (posterSrc) {
+      el.heroPoster.src = posterSrc;
+      el.heroPoster.alt = item.title || 'Featured';
+      el.heroPoster.style.display = 'block';
+    } else {
+      el.heroPoster.style.display = 'none';
+    }
+  }
   if (el.heroTitle) el.heroTitle.textContent = item.title;
-  if (el.heroRating) el.heroRating.textContent = `★ ${item.vote_average.toFixed(1)}`;
+  if (el.heroRating) el.heroRating.textContent = `★ ${(item.vote_average || 0).toFixed(1)}`;
   if (el.heroYear) el.heroYear.textContent = (item.release_date || '').substring(0, 4) || '2026';
   if (el.heroType) el.heroType.textContent = (item.media_type || 'movie').toUpperCase();
   if (el.heroOverview) el.heroOverview.textContent = item.overview || 'No synopsis available.';
@@ -5989,6 +6012,34 @@ function setupEventListeners() {
       }
     });
   }
+
+  if (el.heroPoster) {
+    el.heroPoster.style.cursor = 'pointer';
+    el.heroPoster.addEventListener('click', () => {
+      if (state.featuredItem) {
+        openDetailsModal(state.featuredItem.id, state.featuredItem.media_type || 'movie');
+      }
+    });
+  }
+
+  // Carousel Next/Prev Navigation Buttons (Delegated)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.carousel-btn');
+    if (btn && btn.dataset.target) {
+      e.preventDefault();
+      e.stopPropagation();
+      const target = document.getElementById(btn.dataset.target);
+      if (!target) return;
+      const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+      const isNext = btn.classList.contains('next');
+      const step = Math.max(320, Math.floor(target.clientWidth * 0.75));
+      let delta = isNext ? step : -step;
+      if (isRtl) {
+        delta = -delta;
+      }
+      target.scrollBy({ left: delta, behavior: 'smooth' });
+    }
+  });
 
   // Modal Close Button
   if (el.modalCloseBtn && el.detailsModal) {

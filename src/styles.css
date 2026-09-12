@@ -353,46 +353,96 @@ body {
    ========================================================================== */
 .hero-banner {
   position: relative;
-  height: 380px;
+  min-height: 400px;
   border-radius: var(--radius-lg);
   overflow: hidden;
   margin-bottom: 36px;
   background-size: cover;
-  background-position: center 25%;
+  background-position: center 20%;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border-glass);
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 36px;
+  align-items: center;
+  padding: 36px 44px;
   transition: background-image 0.6s ease-in-out;
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, #0a0c10 10%, rgba(10, 12, 16, 0.8) 50%, rgba(10, 12, 16, 0.2) 100%),
-              linear-gradient(90deg, #0a0c10 0%, rgba(10, 12, 16, 0.7) 40%, transparent 100%);
+  background: radial-gradient(circle at 80% 30%, rgba(10, 12, 16, 0.25) 0%, rgba(10, 12, 16, 0.88) 75%, #0a0c10 100%),
+              linear-gradient(90deg, rgba(10, 12, 16, 0.98) 0%, rgba(10, 12, 16, 0.88) 45%, rgba(10, 12, 16, 0.45) 100%),
+              linear-gradient(0deg, #0a0c10 0%, transparent 60%);
   pointer-events: none;
+}
+
+html[dir="rtl"] .hero-overlay {
+  background: radial-gradient(circle at 20% 30%, rgba(10, 12, 16, 0.25) 0%, rgba(10, 12, 16, 0.88) 75%, #0a0c10 100%),
+              linear-gradient(-90deg, rgba(10, 12, 16, 0.98) 0%, rgba(10, 12, 16, 0.88) 45%, rgba(10, 12, 16, 0.45) 100%),
+              linear-gradient(0deg, #0a0c10 0%, transparent 60%);
 }
 
 .hero-content {
   position: relative;
   z-index: 10;
-  max-width: 600px;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  width: 100%;
+}
+
+.hero-poster-wrap {
+  flex-shrink: 0;
+  width: 180px;
+  height: 260px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), 0 0 24px rgba(229, 9, 20, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  background: #181d28;
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+}
+
+.hero-poster-wrap:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.95), 0 0 32px rgba(229, 9, 20, 0.55);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.hero-poster-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-info-wrap {
+  flex: 1;
+  min-width: 0;
+  max-width: 750px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+html[dir="rtl"] .hero-info-wrap {
+  align-items: flex-start;
+  text-align: right;
 }
 
 .hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  background: rgba(229, 9, 20, 0.85);
+  padding: 5px 12px;
+  background: rgba(229, 9, 20, 0.9);
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
   margin-bottom: 12px;
+  box-shadow: 0 2px 10px rgba(229, 9, 20, 0.4);
 }
 
 .hero-title {
@@ -400,14 +450,14 @@ body {
   font-weight: 800;
   line-height: 1.15;
   margin-bottom: 12px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
 }
 
 .hero-meta {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   font-size: 0.88rem;
   color: var(--text-secondary);
 }
@@ -421,21 +471,142 @@ body {
 }
 
 .hero-overview {
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   color: #cbd5e1;
-  line-height: 1.5;
+  line-height: 1.55;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-bottom: 20px;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  margin-bottom: 22px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
 .hero-buttons {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+/* ==========================================================================
+   Horizontal Media Carousels
+   ========================================================================== */
+.carousel-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 34px;
+}
+
+.media-carousel {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  gap: 18px;
+  padding: 6px 4px 18px 4px;
+  margin-bottom: 0 !important;
+}
+
+.media-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.media-carousel .media-card {
+  flex: 0 0 175px !important;
+  width: 175px !important;
+}
+
+.media-carousel .livetv-card {
+  flex: 0 0 270px !important;
+  width: 270px !important;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(14, 18, 27, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 25;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.carousel-container:hover .carousel-btn {
+  opacity: 0.95;
+  pointer-events: auto;
+}
+
+.carousel-btn:hover {
+  background: var(--accent-gradient);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-50%) scale(1.12);
+  box-shadow: 0 10px 28px rgba(229, 9, 20, 0.6);
+  opacity: 1;
+}
+
+.carousel-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.carousel-btn.prev {
+  left: -16px;
+}
+
+.carousel-btn.next {
+  right: -16px;
+}
+
+html[dir="rtl"] .carousel-btn.prev {
+  left: auto;
+  right: -16px;
+}
+
+html[dir="rtl"] .carousel-btn.next {
+  right: auto;
+  left: -16px;
+}
+
+html[dir="rtl"] .carousel-btn svg {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 768px) {
+  .hero-banner {
+    padding: 24px 20px;
+    min-height: auto;
+  }
+  .hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+  .hero-poster-wrap {
+    width: 130px;
+    height: 190px;
+  }
+  .carousel-btn {
+    opacity: 0.85;
+    pointer-events: auto;
+    width: 36px;
+    height: 36px;
+  }
 }
 
 .btn-primary {
