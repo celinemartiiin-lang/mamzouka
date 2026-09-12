@@ -15,8 +15,8 @@
 ; (Rust command `ensure_engine_assets` + Diagnostics button).
 ; ==========================================================================
 
-!define MAMZOUKA_NODE_URL "https://github.com/mamzouka/mamzouka/releases/download/engine-v1/node.exe"
-!define MAMZOUKA_ENGINE_URL "https://github.com/mamzouka/mamzouka/releases/download/engine-v1/mamzouka-engine.zip"
+!define MAMZOUKA_NODE_URL "https://github.com/celinemartiiin-lang/mamzouka/releases/download/engine-v1/node.exe"
+!define MAMZOUKA_ENGINE_URL "https://github.com/celinemartiiin-lang/mamzouka/releases/download/engine-v1/mamzouka-engine.zip"
 
 !macro NSIS_HOOK_POSTINSTALL
   DetailPrint "Mamzouka: fetching runtime engine (one-time, ~95 MB)..."
