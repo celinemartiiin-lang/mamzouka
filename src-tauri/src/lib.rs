@@ -630,7 +630,6 @@ fn get_trakt_sync_preview(state: State<'_, AppState>) -> Result<String, String> 
     Ok(serde_json::to_string_pretty(&preview).unwrap())
 }
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
 static ENGINE_STARTING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 #[tauri::command]

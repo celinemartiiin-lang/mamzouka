@@ -36,3 +36,10 @@ dist-engine/
 *.njsproj
 *.sln
 *.sw?
+
+# Android builds
+dist-apk/
+src-tauri/gen/android/**/build/
+src-tauri/gen/android/.gradle/
+*.apk
+*.aab
