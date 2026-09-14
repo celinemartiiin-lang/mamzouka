@@ -12,6 +12,9 @@ window.MAMZOUKA_ADS_CONFIG = {
   // تدعم: كود HTML/JS (مثل Adsterra أو Monetag أو Iframes) أو رابط فيديو مباشر MP4
   preroll: {
     enabled: true,
+    // تردد ظهور الإعلان بالساعات: 6 ساعات = مرة واحدة كل 6 ساعات فقط
+    // حتى لو غير المستخدم السيرفر أو المصدر أو الفيديوهات لن يظهر له مجدداً إلا بعد 6 ساعات
+    frequencyHours: 6,
     // عدد الثواني قبل إمكانية تخطي الإعلان (مثلاً: 5 ثوانٍ)
     skipDelaySeconds: 5,
     // نوع الإعلان: 'html' أو 'video'
@@ -22,7 +25,7 @@ window.MAMZOUKA_ADS_CONFIG = {
     // رابط فيديو الإعلان المباشر (mp4 أو webm)
     videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
     // رابط التوجيه عند نقر المستخدم على زر زيارة الراعي
-    targetUrl: 'https://t.me/mamzouka_official',
+    targetUrl: 'https://www.profitableratecpmnetwork.com/vdzds12514?key=d1fdb6a247d83b23bdef33e6bbb52220',
     // عنوان الراعي أو الإعلان
     sponsorTitle: 'إعلان راعي البرنامج الرسمي',
   },
@@ -40,7 +43,7 @@ window.MAMZOUKA_ADS_CONFIG = {
     // التردد بالساعات: 24 ساعة = مرة واحدة في اليوم لكل زائر
     frequencyHours: 24,
     // رابط العرض الإعلاني الذكي (Direct Link / Smartlink من Monetag أو Adsterra)
-    url: 'https://t.me/mamzouka_official',
+    url: 'https://www.profitableratecpmnetwork.com/vdzds12514?key=d1fdb6a247d83b23bdef33e6bbb52220',
   },
 
   // 4. كود إعلاني عام يعمل في واجهة التطبيق (Social Bar / In-Page Push / Native Script)

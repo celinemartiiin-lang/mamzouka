@@ -210,6 +210,30 @@ body {
   border-radius: var(--radius-full);
 }
 
+.sidebar-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.85);
+  margin-left: auto;
+  animation: pulse-live 2s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-live {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.85);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85);
+    box-shadow: 0 0 2px rgba(239, 68, 68, 0.3);
+  }
+}
+
 .sidebar-footer {
   margin-top: auto;
   padding-top: 16px;
@@ -250,6 +274,7 @@ body {
 
 /* Top Navigation Bar */
 .top-header {
+  position: relative;
   height: var(--header-height);
   padding: 0 32px;
   display: flex;
@@ -259,7 +284,8 @@ body {
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border-bottom: 1px solid var(--border-glass);
-  z-index: 40;
+  z-index: 50;
+  -webkit-app-region: no-drag;
 }
 
 .search-box {
@@ -278,6 +304,9 @@ body {
   font-size: 0.9rem;
   font-family: inherit;
   outline: none;
+  cursor: text;
+  pointer-events: auto;
+  -webkit-app-region: no-drag;
   transition: all var(--transition-normal);
 }
 
@@ -309,6 +338,8 @@ body {
   color: var(--text-muted);
   cursor: pointer;
   display: none;
+  pointer-events: auto;
+  -webkit-app-region: no-drag;
 }
 
 .search-clear.visible {
@@ -319,6 +350,17 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
+  pointer-events: auto;
+  -webkit-app-region: no-drag;
+}
+
+.header-actions * {
+  -webkit-app-region: no-drag;
+}
+
+#lang-select {
+  pointer-events: auto !important;
+  -webkit-app-region: no-drag !important;
 }
 
 .btn-icon {
@@ -842,7 +884,7 @@ html[dir="rtl"] .carousel-btn svg {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   z-index: 100;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 24px;
@@ -852,6 +894,7 @@ html[dir="rtl"] .carousel-btn svg {
 }
 
 .modal-backdrop.open {
+  display: flex !important;
   opacity: 1;
   pointer-events: auto;
 }
@@ -1074,6 +1117,91 @@ html[dir="rtl"] .carousel-btn svg {
   font-weight: 600;
 }
 
+/* Modal Related Media ("More Like This") */
+.modal-recs-scroller::-webkit-scrollbar {
+  height: 6px;
+}
+
+.modal-recs-scroller::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+}
+
+.modal-rec-card {
+  width: 140px;
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-rec-card:hover {
+  transform: translateY(-5px) scale(1.03);
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 16px rgba(139, 92, 246, 0.35);
+}
+
+.modal-rec-poster-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  background: #111827;
+  overflow: hidden;
+}
+
+.modal-rec-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.modal-rec-card:hover .modal-rec-poster {
+  transform: scale(1.08);
+}
+
+.modal-rec-rating {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #fbbf24;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-rec-info {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modal-rec-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-rec-year {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
 /* Cinematic Trailer Modal Overlay */
 .trailer-modal-backdrop {
   position: fixed;
@@ -1082,7 +1210,7 @@ html[dir="rtl"] .carousel-btn svg {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   z-index: 300;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 20px;
@@ -1092,6 +1220,7 @@ html[dir="rtl"] .carousel-btn svg {
 }
 
 .trailer-modal-backdrop.open {
+  display: flex !important;
   opacity: 1;
   pointer-events: auto;
 }
@@ -1651,18 +1780,18 @@ html[dir="rtl"] .carousel-btn svg {
   inset: 0;
   background: #000000;
   z-index: 200;
-  display: flex;
+  display: none;
   flex-direction: column;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
   overflow: hidden;
   user-select: none;
 }
 
 .player-view.active {
-  opacity: 1;
-  pointer-events: auto;
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .video-element-wrapper {
@@ -1740,8 +1869,12 @@ html[dir="rtl"] .carousel-btn svg {
   color: #fff;
   z-index: 35;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  pointer-events: auto;
+  pointer-events: none;
   transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
+}
+
+.player-view.active .torrent-hud {
+  pointer-events: auto;
 }
 
 .player-overlay.idle .torrent-hud {
@@ -1818,7 +1951,7 @@ html[dir="rtl"] .carousel-btn svg {
   display: none !important;
 }
 
-.player-overlay > * {
+.player-view.active .player-overlay > * {
   pointer-events: auto;
 }
 
@@ -3393,4 +3526,803 @@ html[dir="rtl"] .legal-disclaimer-banner {
 .btn-legal-close:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
+}
+
+/* ==========================================================================
+   PERFORMANCE CSS — GPU Acceleration & Containment
+   ========================================================================== */
+.media-card {
+  will-change: transform;
+}
+.media-grid, .media-carousel {
+  /* Containment removed to prevent WebView2/Blink offscreen image clipping */
+}
+.media-poster {
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVE — Android APK Optimized Layout
+   ========================================================================== */
+
+/* --- Mobile Hamburger Button --- */
+.mobile-menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+.mobile-menu-btn:hover,
+.mobile-menu-btn:active {
+  background: rgba(229, 9, 20, 0.6);
+  border-color: rgba(229, 9, 20, 0.8);
+}
+.mobile-menu-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+/* --- Sidebar Overlay (mobile) --- */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 49;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.sidebar-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* --- Bottom Navigation Bar (Mobile) --- */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(10, 12, 16, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-glass);
+  z-index: 55;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.bottom-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  min-width: 52px;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-nav-item svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+}
+.bottom-nav-item.active {
+  color: var(--accent-primary);
+}
+.bottom-nav-item.active svg {
+  filter: drop-shadow(0 0 6px rgba(229, 9, 20, 0.5));
+}
+.bottom-nav-item:active {
+  transform: scale(0.92);
+}
+
+/* ==========================================================================
+   MOBILE BREAKPOINT — max-width: 768px
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* --- Show mobile-only elements --- */
+  .mobile-menu-btn {
+    display: flex;
+  }
+  .sidebar-overlay {
+    display: block;
+  }
+  .bottom-nav {
+    display: block;
+  }
+
+  /* --- Sidebar → Slide-out Drawer --- */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100%;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: none;
+    border-right: 1px solid var(--border-glass);
+  }
+  html[dir="rtl"] .sidebar {
+    left: auto;
+    right: 0;
+    transform: translateX(100%);
+    border-right: none;
+    border-left: 1px solid var(--border-glass);
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 16px 0 50px rgba(0, 0, 0, 0.6);
+  }
+  html[dir="rtl"] .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: -16px 0 50px rgba(0, 0, 0, 0.6);
+  }
+
+  /* --- App Layout Reset --- */
+  #app {
+    flex-direction: column;
+  }
+  html[dir="rtl"] #app {
+    flex-direction: column;
+  }
+  .main-wrapper {
+    width: 100%;
+    height: 100vh;
+  }
+
+  /* --- Header Compact --- */
+  .top-header {
+    padding: 0 12px;
+    height: 56px;
+    gap: 8px;
+  }
+  .search-box {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+  .search-box input {
+    height: 38px;
+    font-size: 0.82rem;
+    padding: 0 36px 0 38px;
+  }
+  .search-box input:focus {
+    width: 100%;
+  }
+  .search-icon {
+    left: 12px;
+    width: 14px;
+    height: 14px;
+  }
+  .header-actions {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .header-actions .btn-icon {
+    width: 36px;
+    height: 36px;
+  }
+  #lang-select {
+    height: 36px !important;
+    font-size: 0.7rem !important;
+    padding: 0 6px !important;
+  }
+  /* Hide less-important header buttons on mobile */
+  #btn-command-palette,
+  #btn-profiles,
+  #search-voice-btn {
+    display: none !important;
+  }
+
+  /* --- Content Area --- */
+  .content-scroll {
+    padding: 16px 12px 80px 12px;
+  }
+
+  /* --- Hero Banner Mobile --- */
+  .hero-banner {
+    min-height: auto;
+    padding: 20px 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+  }
+  .hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .hero-poster-wrap {
+    width: 100px;
+    height: 150px;
+    border-width: 1.5px;
+  }
+  .hero-title {
+    font-size: 1.45rem;
+    margin-bottom: 6px;
+  }
+  .hero-meta {
+    font-size: 0.78rem;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .hero-overview {
+    font-size: 0.82rem;
+    -webkit-line-clamp: 2;
+    margin-bottom: 14px;
+  }
+  .hero-buttons {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .hero-buttons .btn-primary,
+  .hero-buttons .btn-secondary {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+  .hero-badge {
+    font-size: 0.68rem;
+    padding: 3px 8px;
+    margin-bottom: 6px;
+  }
+
+  /* --- Section Headers --- */
+  .section-header {
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 1.1rem;
+  }
+  .btn-view-all {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+  }
+
+  /* --- Genre Chips --- */
+  .genre-scroller {
+    gap: 6px;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+  .genre-chip {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+  }
+
+  /* --- Media Cards Grid (3 columns on mobile) --- */
+  .media-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .media-card {
+    border-radius: 10px;
+  }
+  .media-card-info {
+    padding: 8px;
+    gap: 2px;
+  }
+  .media-card-title {
+    font-size: 0.78rem;
+  }
+  .media-card-meta {
+    font-size: 0.68rem;
+  }
+  .media-rating-tag {
+    top: 6px;
+    right: 6px;
+    padding: 2px 5px;
+    font-size: 0.62rem;
+  }
+  .media-type-tag {
+    top: 6px;
+    left: 6px;
+    padding: 2px 5px;
+    font-size: 0.58rem;
+  }
+
+  /* --- Carousel Cards Mobile --- */
+  .media-carousel .media-card {
+    flex: 0 0 130px !important;
+    width: 130px !important;
+  }
+  .media-carousel .livetv-card {
+    flex: 0 0 230px !important;
+    width: 230px !important;
+  }
+  .carousel-container {
+    margin-bottom: 20px;
+  }
+  .media-carousel {
+    gap: 10px;
+    padding: 4px 2px 12px 2px;
+  }
+  .carousel-btn {
+    opacity: 0.8;
+    pointer-events: auto;
+    width: 34px;
+    height: 34px;
+  }
+  .carousel-btn.prev { left: -8px; }
+  .carousel-btn.next { right: -8px; }
+
+  /* --- Details Modal → Full Screen --- */
+  .modal-backdrop {
+    padding: 0;
+  }
+  .modal-container {
+    max-width: 100%;
+    max-height: 100%;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+  }
+  .modal-hero {
+    height: 240px;
+    padding: 16px;
+  }
+  .modal-poster {
+    width: 90px;
+  }
+  .modal-info-header h2 {
+    font-size: 1.3rem;
+  }
+  .modal-meta-row {
+    font-size: 0.8rem;
+    gap: 8px;
+  }
+  .modal-body {
+    padding: 16px;
+  }
+  .modal-overview {
+    font-size: 0.88rem;
+  }
+  .modal-close-btn {
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+  }
+  .modal-genres {
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .modal-genre-tag {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+  }
+
+  /* --- Streams Section Mobile --- */
+  .streams-section {
+    padding: 14px;
+  }
+  .streams-section-title {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+  }
+  .stream-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+    gap: 10px;
+  }
+  .stream-meta-left {
+    width: 100%;
+  }
+  .stream-title-text {
+    font-size: 0.85rem;
+    max-width: 100%;
+  }
+  .stream-meta-right {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn-play-stream,
+  .btn-download-stream,
+  .btn-vlc-stream {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+  .stream-filters {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .filter-pill {
+    padding: 5px 10px;
+    font-size: 0.74rem;
+  }
+
+  /* --- Cast Section --- */
+  .cast-scroller {
+    gap: 10px;
+  }
+  .cast-card {
+    width: 72px;
+  }
+  .cast-avatar {
+    width: 48px;
+    height: 48px;
+  }
+  .cast-name {
+    font-size: 0.68rem;
+  }
+
+  /* --- Trailer Modal Mobile --- */
+  .trailer-modal-container {
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  /* --- Filter Toolbar --- */
+  .filter-toolbar {
+    gap: 8px;
+    padding: 8px 10px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-select-group {
+    width: 100%;
+  }
+  .filter-select {
+    flex: 1;
+    font-size: 0.78rem;
+  }
+
+  /* --- Load More Button --- */
+  .btn-load-more {
+    padding: 10px 28px;
+    font-size: 0.88rem;
+  }
+
+  /* --- Settings --- */
+  .settings-view {
+    max-width: 100%;
+  }
+  .settings-card {
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .settings-title {
+    font-size: 1.05rem;
+    margin-bottom: 14px;
+  }
+
+  /* --- Player Mobile --- */
+  .player-top-bar {
+    gap: 8px;
+  }
+  .player-title-text {
+    max-width: 180px;
+    font-size: 0.95rem;
+  }
+  .player-server-bar {
+    gap: 4px;
+    padding: 3px 4px;
+  }
+  .player-server-chip {
+    padding: 5px 8px;
+    font-size: 0.7rem;
+  }
+  .player-back-btn {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+  .player-bottom-bar {
+    padding: 10px 12px 8px;
+    border-radius: var(--radius-md);
+  }
+  .control-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .controls-left, .controls-right {
+    gap: 6px;
+  }
+  .time-display {
+    font-size: 0.75rem;
+  }
+  .volume-slider {
+    width: 55px;
+  }
+
+  /* --- Downloads Cards --- */
+  .download-card {
+    padding: 12px;
+  }
+  .download-card-poster {
+    width: 44px;
+    height: 62px;
+  }
+  .download-card-title {
+    font-size: 0.85rem;
+  }
+
+  /* --- Radio Cards --- */
+  .radio-card {
+    padding: 12px;
+    gap: 12px;
+  }
+  .radio-avatar {
+    width: 44px;
+    height: 44px;
+  }
+  .radio-title {
+    font-size: 0.85rem;
+  }
+
+  /* --- YouTube & Twitch Grid --- */
+  .yt-card-title, .twitch-card-title {
+    font-size: 0.82rem;
+  }
+  .yt-card-body, .twitch-card-body {
+    padding: 10px 12px;
+  }
+
+  /* --- Live TV Cards --- */
+  .livetv-card {
+    padding: 12px;
+    gap: 10px;
+  }
+  .livetv-logo-box {
+    width: 42px;
+    height: 42px;
+  }
+  .livetv-name {
+    font-size: 0.85rem;
+  }
+
+  /* --- Legal Disclaimer --- */
+  .legal-disclaimer-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+  .legal-disclaimer-text {
+    font-size: 0.76rem;
+  }
+  .legal-disclaimer-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* --- Subtitles --- */
+  .subtitles-menu {
+    right: 10px;
+    left: 10px;
+    width: auto;
+    bottom: 78px;
+  }
+
+  /* --- Speed Menu --- */
+  .speed-menu {
+    right: -20px;
+    bottom: 44px;
+  }
+
+  /* --- Addons Grid — assumed 2-col --- */
+}
+
+/* ==========================================================================
+   SMALL MOBILE BREAKPOINT — max-width: 400px (small phones)
+   ========================================================================== */
+@media (max-width: 400px) {
+  .media-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .hero-title {
+    font-size: 1.2rem;
+  }
+  .hero-poster-wrap {
+    width: 85px;
+    height: 128px;
+  }
+  .section-title {
+    font-size: 1rem;
+  }
+  .media-carousel .media-card {
+    flex: 0 0 110px !important;
+    width: 110px !important;
+  }
+  .bottom-nav-item {
+    font-size: 0.58rem;
+    min-width: 44px;
+  }
+  .bottom-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+  .top-header {
+    padding: 0 8px;
+  }
+  .content-scroll {
+    padding: 12px 8px 80px 8px;
+  }
+}
+
+/* ==========================================================================
+   TABLET BREAKPOINT — 769px to 1024px
+   ========================================================================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sidebar {
+    width: 200px;
+    padding: 18px 12px;
+  }
+  .media-grid {
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 16px;
+  }
+  .content-scroll {
+    padding: 22px 20px 40px 20px;
+  }
+  .hero-banner {
+    min-height: 340px;
+    padding: 28px 28px;
+  }
+  .hero-title {
+    font-size: 1.8rem;
+  }
+  .search-box {
+    width: 320px;
+  }
+}
+
+/* ==========================================================================
+   ANDROID-SPECIFIC FIXES
+   ========================================================================== */
+/* Safe area padding for notched Android devices */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .top-header {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Fix WebView overscroll glow on Android */
+body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Disable long-press context menu on Android */
+* {
+  -webkit-touch-callout: none;
+}
+
+/* Touch feedback for interactive elements on Android */
+@media (hover: none) and (pointer: coarse) {
+  .media-card:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+  }
+  .nav-item:active {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .btn-primary:active {
+    transform: scale(0.97);
+  }
+  .btn-play-stream:active {
+    transform: scale(0.97);
+  }
+  /* Larger touch targets */
+  .genre-chip {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .filter-pill {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* ==========================================================================
+   Emergency Floating Player Back Button & Quick Escapes
+   ========================================================================== */
+.player-emergency-back {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  z-index: 10000;
+  height: 42px;
+  padding: 0 16px 0 12px;
+  border-radius: var(--radius-full);
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.65);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto !important;
+  opacity: 0.85;
+}
+
+[dir="rtl"] .player-emergency-back {
+  left: auto;
+  right: 24px;
+  padding: 0 12px 0 16px;
+}
+
+.player-emergency-back:hover {
+  opacity: 1;
+  transform: scale(1.05);
+  background: rgba(225, 29, 72, 0.9);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 6px 30px rgba(225, 29, 72, 0.5);
+}
+
+/* When player overlay is idle / faded out, keep emergency back button subtly visible */
+.player-overlay.idle ~ .player-emergency-back,
+.player-overlay.idle + .player-emergency-back,
+.player-view .player-emergency-back {
+  opacity: 0.75;
+}
+.player-view:hover .player-emergency-back {
+  opacity: 1;
+}
+
+.btn-player-cancel:hover {
+  background: rgba(225, 29, 72, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+/* RTL Auto-Flip for all back chevron icons */
+[dir="rtl"] #top-nav-back-btn svg,
+[dir="rtl"] .player-back-btn svg,
+[dir="rtl"] .player-emergency-back svg,
+[dir="rtl"] #modal-btn-back svg,
+[dir="rtl"] #search-btn-back svg {
+  transform: scaleX(-1);
 }

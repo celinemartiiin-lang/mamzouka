@@ -47,6 +47,7 @@ pub fn set_remote_source(supabase_url: String, supabase_key: String) {
 
 /// Stable, anonymous device fingerprint for the remote ban list.
 /// SHA-256 over OS identity fields + app salt. Not reversible to the user.
+/// Enhanced for Android: includes ANDROID_ID if available.
 pub fn device_id() -> String {
     let user = std::env::var("USERNAME")
         .or_else(|_| std::env::var("USER"))
@@ -57,7 +58,15 @@ pub fn device_id() -> String {
     let home = std::env::var("USERPROFILE")
         .or_else(|_| std::env::var("HOME"))
         .unwrap_or_default();
-    let input = format!("mamzouka-v1|{}|{}|{}", user.trim(), host.trim(), home.trim());
+    // Android-specific: try to include ANDROID_ID for better fingerprinting
+    let android_id = std::env::var("ANDROID_ID").unwrap_or_default();
+    let input = format!(
+        "mamzouka-v2|{}|{}|{}|{}",
+        user.trim(),
+        host.trim(),
+        home.trim(),
+        android_id.trim()
+    );
     use sha2::{Digest, Sha256};
     let mut hasher = Sha256::new();
     hasher.update(input.as_bytes());

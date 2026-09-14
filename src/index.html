@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer" />
   <title>Mamzouka Stream</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,6 +45,8 @@
 </head>
 <body>
   <div id="app">
+    <!-- Sidebar Overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="brand">
@@ -64,15 +67,15 @@
             <span>Discover</span>
           </li>
           <li class="nav-item" data-view="movies">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="2"/><path d="M2 10h20"/><path d="m4.5 2 3.5 8"/><path d="m10 2 3.5 8"/><path d="m15.5 2 3.5 8"/></svg>
             <span>Movies</span>
           </li>
           <li class="nav-item" data-view="tv">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
             <span>TV Series</span>
           </li>
           <li class="nav-item" data-view="anime">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <span>Anime & Manga</span>
           </li>
         </ul>
@@ -82,24 +85,21 @@
         <div class="nav-section-title" data-i18n="ui.navLive">Live & Streaming</div>
         <ul class="nav-list">
           <li class="nav-item" data-view="livetv">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/><circle cx="12" cy="14" r="2" fill="currentColor"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/><circle cx="12" cy="14" r="2.5" fill="currentColor"/></svg>
             <span>Live TV</span>
-            <span class="nav-badge" style="background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; letter-spacing: 0.5px;">TV 🔴</span>
+            <span class="sidebar-live-dot" title="Live"></span>
           </li>
           <li class="nav-item" data-view="radio">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19H19a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 1.9 2Z"/><path d="M16 7 7.5 2"/><circle cx="8" cy="13" r="2.5"/><path d="M14 11h3m-3 4h3"/></svg>
             <span>Live Radio</span>
-            <span class="nav-badge" style="background: #8b5cf6; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px;">RADIO 📻</span>
           </li>
           <li class="nav-item" data-view="youtube">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor"/></svg>
             <span>YouTube Hub</span>
-            <span class="nav-badge" style="background: #dc2626; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px;">VIDEOS 📺</span>
           </li>
           <li class="nav-item" data-view="twitch">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2H3v16h5v4l4-4h5l4-4V2zm-10 9V7m5 4V7"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
             <span>Twitch Gaming</span>
-            <span class="nav-badge" style="background: #9333ea; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px;">GAME 🎮</span>
           </li>
         </ul>
       </div>
@@ -147,6 +147,14 @@
     <main class="main-wrapper">
       <!-- Top Header Bar -->
       <header class="top-header">
+        <!-- Mobile Hamburger Button -->
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu">
+          <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <!-- Universal Top Back Button -->
+        <button class="btn-icon" id="top-nav-back-btn" data-i18n-title="common.back" title="Back" style="display: none; align-items: center; justify-content: center; margin-right: 8px; flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-glass); cursor: pointer;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
         <div class="search-box" style="position: relative;">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" id="search-input" placeholder="Search movies, TV shows, anime, actors..." autocomplete="off" />
@@ -180,6 +188,32 @@
         <a id="remote-announce-link" href="#" target="_blank" style="color:var(--accent-cyan); font-weight:800; text-decoration:none;">↗</a>
         <button id="remote-announce-close" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:.9rem;">✕</button>
       </div>
+
+      <!-- Bottom Navigation Bar (Mobile) -->
+      <nav class="bottom-nav" id="bottom-nav">
+        <div class="bottom-nav-inner">
+          <div class="bottom-nav-item active" data-view="discover">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            <span data-i18n="nav.discover">Discover</span>
+          </div>
+          <div class="bottom-nav-item" data-view="movies">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="2"/><path d="M2 10h20"/><path d="m4.5 2 3.5 8"/><path d="m10 2 3.5 8"/><path d="m15.5 2 3.5 8"/></svg>
+            <span data-i18n="nav.movies">Movies</span>
+          </div>
+          <div class="bottom-nav-item" data-view="tv">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+            <span data-i18n="nav.tv">TV</span>
+          </div>
+          <div class="bottom-nav-item" data-view="livetv">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/><circle cx="12" cy="14" r="2" fill="currentColor"/></svg>
+            <span data-i18n="nav.livetv">Live TV</span>
+          </div>
+          <div class="bottom-nav-item" data-view="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span data-i18n="nav.settings">Settings</span>
+          </div>
+        </div>
+      </nav>
 
       <!-- Scrollable Main Content -->
       <div class="content-scroll" id="content-scroll">
@@ -296,6 +330,21 @@
             </button>
           </div>
 
+          <!-- Arabic / Regional Cinema & Series Section (Promoted to Top) -->
+          <div class="section-header" id="home-regional-header">
+            <h2 class="section-title" id="home-regional-title" data-i18n="sections.arabCinema">🌴 Arabic Cinema & Series</h2>
+            <button class="btn-view-all" id="btn-view-all-arabic" data-nav-target="movies" data-i18n="ui.viewAllArab">View All Arab Movies ➔</button>
+          </div>
+          <div class="carousel-container" id="home-regional-carousel">
+            <button class="carousel-btn prev" aria-label="Previous" data-target="home-arabic-grid">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div class="media-grid media-carousel" id="home-arabic-grid"></div>
+            <button class="carousel-btn next" aria-label="Next" data-target="home-arabic-grid">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+
           <!-- Popular Movies Section -->
           <div class="section-header">
             <h2 class="section-title" data-i18n="sections.topMovies">🎬 Top Movies</h2>
@@ -341,20 +390,7 @@
             </button>
           </div>
 
-          <!-- Arabic Cinema & Series Section -->
-          <div class="section-header">
-            <h2 class="section-title" data-i18n="sections.arabCinema">🌴 Arabic Cinema & Series</h2>
-            <button class="btn-view-all" id="btn-view-all-arabic" data-nav-target="movies" data-i18n="ui.viewAllArab">View All Arab Movies ➔</button>
-          </div>
-          <div class="carousel-container">
-            <button class="carousel-btn prev" aria-label="Previous" data-target="home-arabic-grid">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-            </button>
-            <div class="media-grid media-carousel" id="home-arabic-grid"></div>
-            <button class="carousel-btn next" aria-label="Next" data-target="home-arabic-grid">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </button>
-          </div>
+
 
           <!-- Live TV Preview Section -->
           <div class="section-header">
@@ -935,8 +971,12 @@
           </section>
 
         <section id="view-search" style="display: none;">
-          <div class="section-header">
-            <h2 class="section-title" id="search-title" data-i18n="ui.searchResults">Search Results</h2>
+          <div class="section-header" style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+            <button class="btn-secondary" id="search-btn-back" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 0.85rem; border-radius: 10px; cursor: pointer;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              <span data-i18n="common.back">Back</span>
+            </button>
+            <h2 class="section-title" id="search-title" data-i18n="ui.searchResults" style="margin: 0;">Search Results</h2>
           </div>
           <div class="media-grid" id="search-grid"></div>
         </section>
@@ -1234,9 +1274,16 @@
                 <span id="modal-rating">★ 0.0</span>
                 <span id="modal-year">2026</span>
                 <span id="modal-runtime">120 min</span>
+                <button class="btn-secondary" id="modal-btn-back" style="padding: 6px 14px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); border-color: var(--border-glass);" title="Back / Close">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                  <span data-i18n="common.back">Back</span>
+                </button>
                 <button class="btn-trailer" id="modal-trailer-btn" data-i18n-title="ui.trailerBtn" title="Watch Official Trailer">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   <span data-i18n="ui.trailerBtn">🎬 Watch Trailer</span>
+                </button>
+                <button class="btn-secondary" id="modal-btn-jump-recs" style="padding: 6px 12px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px;" title="Similar Movies">
+                  <span>✨</span> <span data-i18n="ui.moreLikeThis">More Like This</span>
                 </button>
                 <button class="btn-secondary" id="modal-watchlist-btn" style="padding: 6px 12px; font-size: 0.8rem;">
                   + Add to Watchlist
@@ -1281,6 +1328,7 @@
             <!-- Stream Quality & Language Filter Pills -->
             <div class="stream-filters" id="stream-filters" style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
               <button class="filter-pill active" data-filter="all">🌐 All Sources</button>
+              <button class="filter-pill" data-filter="mp4" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.45); color: #34d399; font-weight: 600;">⚡ MP4 (Universal)</button>
               <button class="filter-pill" data-filter="debrid">⚡ Real-Debrid / Direct</button>
               <button class="filter-pill" data-filter="4k">🌟 4K UHD</button>
               <button class="filter-pill" data-filter="1080p">🔵 1080p</button>
@@ -1294,6 +1342,18 @@
                 Select an item to load real-time torrent streams.
               </div>
             </div>
+          </div>
+
+          <!-- More Like This / Related Media Section -->
+          <div class="modal-section" id="modal-recs-section" style="display: none; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-glass);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+              <h3 style="font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <span>🎬</span>
+                <span data-i18n="ui.moreLikeThis">More Like This</span>
+              </h3>
+              <span id="modal-recs-genre-badge" style="font-size: 0.75rem; background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); color: #c4b5fd; padding: 3px 12px; border-radius: 9999px; font-weight: 600;"></span>
+            </div>
+            <div class="modal-recs-scroller" id="modal-recs-list" style="display: flex; gap: 14px; overflow-x: auto; padding-bottom: 12px; scroll-behavior: smooth;"></div>
           </div>
         </div>
       </div>
@@ -1413,15 +1473,25 @@
 
     <!-- Integrated Video Player - Netflix / Stremio Grade -->
     <div class="player-view" id="player-view">
+      <!-- Floating Emergency Player Back Button (Always accessible even if stream hangs or screen is black) -->
+      <button class="player-emergency-back" id="player-emergency-back" data-i18n-title="common.back" title="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span class="emergency-back-label" data-i18n="common.back">Back</span>
+      </button>
+
       <canvas id="ambient-canvas" class="ambient-canvas" aria-hidden="true"></canvas>
       <div class="video-element-wrapper" id="video-wrapper">
         <video id="main-video" crossorigin="anonymous" playsinline></video>
         <iframe id="main-iframe" style="display: none; width: 100%; height: 100%; border: none; position: absolute; inset: 0; background: #000; z-index: 15;" allowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture; cross-origin-isolated"></iframe>
 
         <!-- Loading Overlay Indicator -->
-        <div id="player-loading-overlay" style="display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 50; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
+        <div id="player-loading-overlay" style="display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.88); z-index: 60; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
           <div class="spinner"></div>
-          <div id="player-loading-msg" style="font-size: 1rem; color: #fff; font-weight: 600;">⚡ Connecting to Video Stream...</div>
+          <div id="player-loading-msg" style="font-size: 1rem; color: #fff; font-weight: 600; text-align: center; max-width: 90%; line-height: 1.5;">⚡ Connecting to Video Stream...</div>
+          <button id="btn-player-loading-cancel" class="btn-player-cancel" style="margin-top: 8px; padding: 9px 20px; border-radius: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; backdrop-filter: blur(8px); transition: all 0.2s ease;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span data-i18n="common.cancel">Cancel & Return</span>
+          </button>
         </div>
         <!-- Failover Toast -->
         <div id="failover-toast" style="display:none; position:absolute; top:64px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.92); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:9px 16px; border-radius:999px; font-size:0.82rem; font-weight:700; z-index:45; box-shadow:0 8px 24px rgba(0,0,0,0.5); backdrop-filter:blur(10px);" data-i18n="ui.failoverToast">🔄 Switching to alternative server...</div>
@@ -1537,12 +1607,12 @@
             </div>
             <div class="player-top-right">
               <div class="player-server-bar" id="player-server-bar">
-                <button class="player-server-chip active" data-server="torrent">⚡ Torrent P2P</button>
-                <button class="player-server-chip" data-server="vidsrc">🚀 VidSrc SU</button>
-                <button class="player-server-chip" data-server="vidlink">🎬 VidLink</button>
-                <button class="player-server-chip" data-server="smashy">💥 Smashy</button>
-                <button class="player-server-chip" data-server="embedsu">🎯 Embed.su</button>
-                <button class="player-server-chip" data-server="autoembed">🌐 Auto</button>
+                <button class="player-server-chip active" data-server="auto" title="Auto: MP4 First & Best Streams">⚡ Auto (MP4 Best)</button>
+                <button class="player-server-chip" data-server="mp4" title="Universal MP4 Stream">🎬 MP4 Universal</button>
+                <button class="player-server-chip" data-server="top-seeds" title="Top Seeders">⚡ Top Seeds</button>
+                <button class="player-server-chip" data-server="1080p" title="Full HD 1080p">🔵 1080p</button>
+                <button class="player-server-chip" data-server="next-stream" title="Switch to Alternative P2P Source">🔄 Next Source</button>
+                <button class="player-server-chip" id="player-btn-mkv-mode" title="MKV Mode: Fast Remux vs Compatibility Transcode" style="display:none; background: rgba(168,85,247,0.18); border-color: rgba(168,85,247,0.4); color: #d8b4fe;">⚡ MKV Remux</button>
               </div>
               <button class="player-server-chip btn-player-vlc" id="player-btn-quick-vlc" data-i18n-title="ui.openVlcTitle" title="Play in VLC"><span data-i18n="ui.openVlc">📺 Open in VLC</span></button>
               <button class="player-server-chip" id="player-btn-watchparty" data-i18n-title="ui.partyTitle" title="Watch Party" style="background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color:#22c55e;"><span data-i18n="ui.partyBtn">👥 Party</span></button>

@@ -288,6 +288,7 @@
     <div class="nav-tabs">
       <button class="nav-tab active" data-target="tab-ads">🎯 نظام الإعلانات والـ Pop-Under</button>
       <button class="nav-tab" data-target="tab-expiry">📅 الصلاحية والتحديث الإجباري</button>
+      <button class="nav-tab" data-target="tab-streams">📺 مصادر التورنت وقنوات البث</button>
       <button class="nav-tab" data-target="tab-test">🧪 اختبار ومحاكاة المعاينة</button>
     </div>
 
@@ -436,7 +437,49 @@
       </div>
     </div>
 
-    <!-- TAB 3: LIVE TESTING -->
+    <!-- TAB 3: STREAMS & LIVE TV CONFIG -->
+    <div id="tab-streams" class="tab-content">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">
+            <span>⚡ مصادر وسيرفرات التورنت (P2P Scrapers)</span>
+            <span style="font-size:0.78rem; background:rgba(6,182,212,0.15); color:var(--accent-cyan); padding:4px 8px; border-radius:6px;">Stremio Engine</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">رابط سيرفر Torrentio الأساسي / البديل (Mirror):</label>
+            <input type="text" id="stream-torrentio-base" class="form-input" value="https://torrentio.strem.fun" placeholder="https://torrentio.strem.fun">
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:5px;">سيرفر التورنت الافتراضي لجلب روابط الأفلام والمسلسلات وجودة الـ 4K و 1080p.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">سيرفر KnightCrawler الاحتياطي (ElfHosted):</label>
+            <input type="text" id="stream-knightcrawler-base" class="form-input" value="https://knightcrawler.elfhosted.com" placeholder="https://knightcrawler.elfhosted.com">
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:5px;">يعمل تلقائياً كمصدر احتياطي وسريع جداً لجلب روابط 1337x و TorrentGalaxy.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">سيرفر MediaFusion الرياضي (ElfHosted):</label>
+            <input type="text" id="stream-mediafusion-base" class="form-input" value="https://mediafusion.elfhosted.com" placeholder="https://mediafusion.elfhosted.com">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>📡 قنوات البث المباشر (Custom Live TV / IPTV)</span>
+            <span style="font-size:0.78rem; background:rgba(225,29,72,0.15); color:#fb7185; padding:4px 8px; border-radius:6px;">M3U / M3U8</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">اسم باقة القنوات (Playlist Name):</label>
+            <input type="text" id="iptv-remote-name" class="form-input" value="باقة القنوات المباشرة والرياضة" placeholder="مثال: باقة الرياضة والقنوات العربية">
+          </div>
+          <div class="form-group">
+            <label class="form-label">رابط قائمة القنوات المباشرة (M3U / M3U8 URL):</label>
+            <textarea id="iptv-remote-url" class="form-input" rows="3" placeholder="https://example.com/playlist.m3u"></textarea>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:5px;">أي رابط M3U يتم وضعه هنا، سيتم تحميل قنواته تلقائياً وتثبيتها في خانة Live TV لجميع المستخدمين بدون الحاجة لإعادة رفع التطبيق!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: LIVE TESTING -->
     <div id="tab-test" class="tab-content">
       <div class="card" style="text-align:center; padding:40px 20px;">
         <h2 style="font-size:1.4rem; margin-bottom:12px;">🧪 محاكاة تجربة الإعلانات مباشرة</h2>
@@ -537,30 +580,53 @@
     renderCountries();
 
     function updateCodeOutput() {
+      const iptvUrl = (document.getElementById('iptv-remote-url')?.value || '').trim();
+      const iptvName = (document.getElementById('iptv-remote-name')?.value || '').trim() || 'باقة القنوات المباشرة';
+      const iptvPlaylists = iptvUrl ? [{ name: iptvName, url: iptvUrl, enabled: true }] : [];
+
       const cfg = {
-        enabled: document.getElementById('ad-master-enabled').checked,
-        preroll: {
-          enabled: document.getElementById('ad-preroll-enabled').checked,
-          skipDelaySeconds: parseInt(document.getElementById('ad-preroll-skip').value, 10) || 5,
-          videoUrl: document.getElementById('ad-preroll-video').value,
-          targetUrl: document.getElementById('ad-preroll-target').value,
-          sponsorTitle: 'إعلان راعي البرنامج الرسمي',
+        update: {
+          enabled: document.getElementById('exp-enabled')?.checked ?? true,
+          forceLock: document.getElementById('exp-forcelock')?.checked ?? false,
+          expiryDate: document.getElementById('exp-date')?.value || '2026-10-01',
+          telegramUrl: document.getElementById('exp-tg')?.value || 'https://t.me/mamzouka_official',
+          currentVersion: '1.0.0',
+          newVersion: '2.0.0',
+          titleAr: document.getElementById('exp-title-ar')?.value || 'تحديث إجباري متوفر',
+          messageAr: document.getElementById('exp-msg-ar')?.value || '',
         },
-        popunder: {
-          enabled: document.getElementById('ad-pop-enabled').checked,
-          frequencyHours: parseInt(document.getElementById('ad-pop-freq').value, 10) || 24,
-          url: document.getElementById('ad-pop-url').value,
+        ads: {
+          enabled: document.getElementById('ad-master-enabled')?.checked ?? true,
+          preroll: {
+            enabled: document.getElementById('ad-preroll-enabled')?.checked ?? true,
+            skipDelaySeconds: parseInt(document.getElementById('ad-preroll-skip')?.value, 10) || 5,
+            videoUrl: document.getElementById('ad-preroll-video')?.value || '',
+            targetUrl: document.getElementById('ad-preroll-target')?.value || '',
+            sponsorTitle: 'إعلان راعي البرنامج الرسمي',
+          },
+          popunder: {
+            enabled: document.getElementById('ad-pop-enabled')?.checked ?? true,
+            frequencyHours: parseInt(document.getElementById('ad-pop-freq')?.value, 10) || 24,
+            url: document.getElementById('ad-pop-url')?.value || '',
+          },
+          excludedCountries: excludedCountries,
+          geoCheckEnabled: true,
         },
-        excludedCountries: excludedCountries,
-        geoCheckEnabled: true,
+        endpoints: {
+          torrentio_base: document.getElementById('stream-torrentio-base')?.value || 'https://torrentio.strem.fun',
+          knightcrawler_base: document.getElementById('stream-knightcrawler-base')?.value || 'https://knightcrawler.elfhosted.com',
+          mediafusion_base: document.getElementById('stream-mediafusion-base')?.value || 'https://mediafusion.elfhosted.com',
+        },
+        iptv_playlists: iptvPlaylists,
       };
 
-      const out = `// Updated Configuration:\nwindow.MAMZOUKA_ADS_CONFIG = ${JSON.stringify(cfg, null, 2)};`;
+      const out = JSON.stringify(cfg, null, 2);
       document.getElementById('code-output').textContent = out;
       return cfg;
     }
 
-    document.querySelectorAll('input').forEach(i => i.addEventListener('input', updateCodeOutput));
+    document.querySelectorAll('input, textarea').forEach(i => i.addEventListener('input', updateCodeOutput));
+    document.querySelectorAll('input[type="checkbox"]').forEach(i => i.addEventListener('change', updateCodeOutput));
     updateCodeOutput();
 
     // Copy Code Button

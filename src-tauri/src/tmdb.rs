@@ -141,6 +141,10 @@ fn format_image_url(path: &Option<String>, size: &str) -> Option<String> {
     path.as_ref().map(|p| format!("{}/{}{}", TMDB_IMAGE_BASE, size, p))
 }
 
+fn format_poster_or_backdrop(poster: &Option<String>, backdrop: &Option<String>, size: &str) -> Option<String> {
+    format_image_url(poster, size).or_else(|| format_image_url(backdrop, size))
+}
+
 pub struct TmdbClient {
     client: reqwest::Client,
     api_key: String,
@@ -188,7 +192,7 @@ impl TmdbClient {
                         title,
                         original_title: item.get("original_title").or_else(|| item.get("original_name")).and_then(|t| t.as_str()).map(|s| s.to_string()),
                         overview: item.get("overview").and_then(|o| o.as_str()).unwrap_or("").to_string(),
-                        poster_url: format_image_url(&poster_path, "w500"),
+                        poster_url: format_poster_or_backdrop(&poster_path, &backdrop_path, "w500"),
                         backdrop_url: format_image_url(&backdrop_path, "original"),
                         poster_path,
                         backdrop_path,
@@ -230,7 +234,7 @@ impl TmdbClient {
                     title,
                     original_title: item.get("original_title").or_else(|| item.get("original_name")).and_then(|t| t.as_str()).map(|s| s.to_string()),
                     overview: item.get("overview").and_then(|o| o.as_str()).unwrap_or("").to_string(),
-                    poster_url: format_image_url(&poster_path, "w500"),
+                    poster_url: format_poster_or_backdrop(&poster_path, &backdrop_path, "w500"),
                     backdrop_url: format_image_url(&backdrop_path, "original"),
                     poster_path,
                     backdrop_path,
@@ -284,7 +288,7 @@ impl TmdbClient {
             let c_lower = c.trim().to_lowercase();
             if !c_lower.is_empty() && c_lower != "all" {
                 match c_lower.as_str() {
-                    "ar" | "arab" => {
+                    "ar" | "arab" | "mena" | "arabic" => {
                         with_orig_lang = Some("ar".to_string());
                     }
                     "us" | "usa" => {
@@ -350,39 +354,51 @@ impl TmdbClient {
                     }
                     "ma" | "morocco" => {
                         with_orig_country = Some("MA".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "sa" | "saudi" => {
                         with_orig_country = Some("SA".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "sy" | "syria" => {
                         with_orig_country = Some("SY".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "lb" | "lebanon" => {
                         with_orig_country = Some("LB".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "dz" | "algeria" => {
                         with_orig_country = Some("DZ".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "tn" | "tunisia" => {
                         with_orig_country = Some("TN".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "kw" | "kuwait" => {
                         with_orig_country = Some("KW".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "ae" | "uae" => {
                         with_orig_country = Some("AE".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "jo" | "jordan" => {
                         with_orig_country = Some("JO".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "iq" | "iraq" => {
                         with_orig_country = Some("IQ".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "ps" | "palestine" => {
                         with_orig_country = Some("PS".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "qa" | "qatar" => {
                         with_orig_country = Some("QA".to_string());
+                        with_orig_lang = Some("ar".to_string());
                     }
                     "ru" | "russia" => {
                         with_orig_country = Some("RU".to_string());
@@ -516,10 +532,10 @@ impl TmdbClient {
             }
         }
 
-        if let Some(lang) = with_orig_lang {
+        if let Some(ref lang) = with_orig_lang {
             extra_params.push_str(&format!("&with_original_language={}", lang));
         }
-        if let Some(cntry) = with_orig_country {
+        if let Some(ref cntry) = with_orig_country {
             extra_params.push_str(&format!("&with_origin_country={}", cntry));
         }
 
@@ -535,6 +551,8 @@ impl TmdbClient {
             if rating > 0.0 {
                 extra_params.push_str(&format!("&vote_average.gte={}&vote_count.gte=50", rating));
             }
+        } else if with_orig_lang.is_some() || with_orig_country.is_some() {
+            extra_params.push_str("&vote_count.gte=5");
         }
 
         let url = format!("{}/{}?api_key={}&page={}&sort_by={}{}&language={}", TMDB_BASE_URL, endpoint, self.api_key, page, sort, extra_params, ui_lang);
@@ -555,7 +573,7 @@ impl TmdbClient {
                         title,
                         original_title: item.get("original_title").or_else(|| item.get("original_name")).and_then(|t| t.as_str()).map(|s| s.to_string()),
                         overview: item.get("overview").and_then(|o| o.as_str()).unwrap_or("").to_string(),
-                        poster_url: format_image_url(&poster_path, "w500"),
+                        poster_url: format_poster_or_backdrop(&poster_path, &backdrop_path, "w500"),
                         backdrop_url: format_image_url(&backdrop_path, "w1280"),
                         poster_path,
                         backdrop_path,
@@ -595,7 +613,7 @@ impl TmdbClient {
                     title,
                     original_title: item.get("original_title").or_else(|| item.get("original_name")).and_then(|t| t.as_str()).map(|s| s.to_string()),
                     overview: item.get("overview").and_then(|o| o.as_str()).unwrap_or("").to_string(),
-                    poster_url: format_image_url(&poster_path, "w500"),
+                    poster_url: format_poster_or_backdrop(&poster_path, &backdrop_path, "w500"),
                     backdrop_url: format_image_url(&backdrop_path, "w1280"),
                     poster_path,
                     backdrop_path,
@@ -639,7 +657,7 @@ impl TmdbClient {
                         title,
                         original_title: item.get("original_title").or_else(|| item.get("original_name")).and_then(|t| t.as_str()).map(|s| s.to_string()),
                         overview: item.get("overview").and_then(|o| o.as_str()).unwrap_or("").to_string(),
-                        poster_url: format_image_url(&poster_path, "w500"),
+                        poster_url: format_poster_or_backdrop(&poster_path, &backdrop_path, "w500"),
                         backdrop_url: format_image_url(&backdrop_path, "w1280"),
                         poster_path,
                         backdrop_path,
@@ -685,7 +703,7 @@ impl TmdbClient {
                     title,
                     original_title: item.get("original_title").or_else(|| item.get("original_name")).and_then(|t| t.as_str()).map(|s| s.to_string()),
                     overview: item.get("overview").and_then(|o| o.as_str()).unwrap_or("").to_string(),
-                    poster_url: format_image_url(&poster_path, "w500"),
+                    poster_url: format_poster_or_backdrop(&poster_path, &backdrop_path, "w500"),
                     backdrop_url: format_image_url(&backdrop_path, "w1280"),
                     poster_path,
                     backdrop_path,
@@ -803,7 +821,7 @@ impl TmdbClient {
             id,
             title,
             overview: data.get("overview").and_then(|o| o.as_str()).unwrap_or("").to_string(),
-            poster_url: format_image_url(&poster_path, "w500"),
+            poster_url: format_poster_or_backdrop(&poster_path, &backdrop_path, "w500"),
             backdrop_url: format_image_url(&backdrop_path, "original"),
             release_date: data.get("release_date").or_else(|| data.get("first_air_date")).and_then(|d| d.as_str()).map(|s| s.to_string()),
             vote_average: data.get("vote_average").and_then(|v| v.as_f64()).unwrap_or(0.0),
@@ -864,7 +882,7 @@ impl TmdbClient {
                     overview: item.get("overview").and_then(|o| o.as_str()).unwrap_or("").to_string(),
                     poster_path: poster_path.clone(),
                     backdrop_path: backdrop_path.clone(),
-                    poster_url: format_image_url(&poster_path, "w500"),
+                    poster_url: format_poster_or_backdrop(&poster_path, &backdrop_path, "w500"),
                     backdrop_url: format_image_url(&backdrop_path, "w1280"),
                     release_date: item.get("release_date").or_else(|| item.get("first_air_date")).and_then(|d| d.as_str()).map(|s| s.to_string()),
                     vote_average: item.get("vote_average").and_then(|v| v.as_f64()).unwrap_or(0.0),

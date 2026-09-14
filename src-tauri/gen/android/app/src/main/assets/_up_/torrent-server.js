@@ -71,6 +71,7 @@ function findFfmpeg() {
   }
   if (process.platform === 'win32') {
     candidates.push(
+      'C:\\ffmpeg\\ffmpeg.exe',
       'C:\\ffmpeg\\bin\\ffmpeg.exe',
       'C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe',
       path.join(process.cwd(), 'ffmpeg.exe'),
@@ -520,7 +521,7 @@ app.get('/api/stream/:infoHash/:fileIndex', async (req, res) => {
 
   let mimeType = 'video/mp4';
   const lower = file.name.toLowerCase();
-  if (lower.endsWith('.mkv')) mimeType = 'video/x-matroska';
+  if (lower.endsWith('.mkv')) mimeType = 'video/webm'; // Chromium/WebView parses Matroska natively via webm container engine
   else if (lower.endsWith('.webm')) mimeType = 'video/webm';
   else if (lower.endsWith('.mp4') || lower.endsWith('.m4v')) mimeType = 'video/mp4';
   else if (lower.endsWith('.avi')) mimeType = 'video/x-msvideo';
@@ -562,6 +563,169 @@ app.get('/api/stream/:infoHash/:fileIndex', async (req, res) => {
     stream.on('error', () => {});
     req.on('close', () => stream.destroy());
   }
+});
+
+// ----------------------------------------------------
+// Live On-The-Fly Transmuxing & Transcoding (MKV/DTS/AC3/HEVC -> Browser MP4)
+// GET /api/stream-live/:infoHash/:fileIndex?mode=remux|transcode&ss=0
+// ----------------------------------------------------
+let _hasNvenc = null;
+function checkNvenc(ffmpegBin) {
+  if (_hasNvenc !== null) return _hasNvenc;
+  try {
+    const out = execSync(`"${ffmpegBin}" -encoders`, { encoding: 'utf8', timeout: 3000 });
+    _hasNvenc = out.includes('h264_nvenc');
+  } catch (e) {
+    _hasNvenc = false;
+  }
+  return _hasNvenc;
+}
+
+app.get('/api/stream-live/:infoHash/:fileIndex', async (req, res) => {
+  const { infoHash, fileIndex } = req.params;
+  const startTime = parseFloat(req.query.ss) || 0;
+  const mode = req.query.mode === 'transcode' ? 'transcode' : 'remux';
+
+  let torrent = findTorrent(infoHash);
+  if (!torrent) {
+    return res.status(404).json({ error: 'Torrent not active. Start stream first.' });
+  }
+
+  if (!torrent.ready || !torrent.files || torrent.files.length === 0) {
+    await waitForTorrentReady(torrent, 30000);
+  }
+
+  if (!torrent.files || torrent.files.length === 0) {
+    return res.status(404).send('Torrent metadata still loading');
+  }
+
+  const fileIdxNum = parseInt(fileIndex, 10);
+  const file = torrent.files[fileIdxNum] || torrent.files[0];
+  if (!file) return res.status(404).send('File not found');
+
+  const ffmpegBin = findFfmpeg();
+  if (!ffmpegBin) {
+    // If no FFmpeg available on system, fallback to standard stream
+    return res.redirect(`/api/stream/${infoHash}/${fileIndex}`);
+  }
+
+  const inputUrl = `http://127.0.0.1:${PORT}/api/stream/${infoHash}/${fileIndex}`;
+
+  const ffmpegArgs = [
+    '-hide_banner',
+    '-loglevel', 'warning',
+  ];
+
+  if (startTime > 0) {
+    ffmpegArgs.push('-ss', String(startTime));
+  }
+
+  ffmpegArgs.push(
+    '-reconnect', '1',
+    '-reconnect_at_eof', '1',
+    '-reconnect_streamed', '1',
+    '-reconnect_delay_max', '5',
+    '-i', inputUrl,
+    '-map', '0:v:0',
+    '-map', '0:a:0?'
+  );
+
+  if (mode === 'transcode') {
+    const useNvenc = checkNvenc(ffmpegBin);
+    if (useNvenc) {
+      ffmpegArgs.push(
+        '-c:v', 'h264_nvenc',
+        '-preset', 'p1',
+        '-tune', 'ull',
+        '-b:v', '5M',
+        '-maxrate', '8M',
+        '-bufsize', '10M',
+        '-pix_fmt', 'yuv420p'
+      );
+    } else {
+      ffmpegArgs.push(
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-tune', 'zerolatency',
+        '-crf', '22',
+        '-pix_fmt', 'yuv420p'
+      );
+    }
+  } else {
+    // Fast remux: video packets copied without re-encoding (0% CPU, instant start!)
+    ffmpegArgs.push('-c:v', 'copy');
+  }
+
+  // Audio: always transcode to AAC stereo so AC3, EAC3, DTS, TrueHD all play seamlessly in WebView2!
+  ffmpegArgs.push(
+    '-c:a', 'aac',
+    '-b:a', '192k',
+    '-ac', '2',
+    // Output: Fragmented MP4 stream directly to stdout pipe
+    '-f', 'mp4',
+    '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
+    'pipe:1'
+  );
+
+  console.log(`[StreamLive] Starting ${mode} (NVENC: ${checkNvenc(ffmpegBin)}) for ${file.name} ss=${startTime}`);
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', '*');
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Cache-Control', 'no-cache, no-store');
+
+  const child = spawn(ffmpegBin, ffmpegArgs, { windowsHide: true });
+
+  child.stdout.pipe(res);
+
+  let killed = false;
+  const killProc = () => {
+    if (killed) return;
+    killed = true;
+    try {
+      child.stdout.destroy();
+      child.kill('SIGKILL');
+    } catch (e) {}
+  };
+
+  child.stderr.on('data', (d) => {
+    const msg = d.toString();
+    if (msg.toLowerCase().includes('error')) {
+      console.warn(`[StreamLive FFmpeg] ${msg.trim()}`);
+    }
+  });
+
+  child.on('error', (err) => {
+    console.error(`[StreamLive] FFmpeg error:`, err);
+    killProc();
+  });
+
+  child.on('close', (code) => {
+    killProc();
+  });
+
+  req.on('close', () => {
+    killProc();
+  });
+});
+
+app.get('/api/probe/:infoHash/:fileIndex', async (req, res) => {
+  const { infoHash, fileIndex } = req.params;
+  const torrent = findTorrent(infoHash);
+  if (!torrent || !torrent.files || !torrent.files[fileIndex]) {
+    return res.status(404).json({ error: 'File not ready' });
+  }
+  const file = torrent.files[fileIndex];
+  const isMkv = isMkvName(file.name);
+  const ffmpegBin = findFfmpeg();
+  res.json({
+    name: file.name,
+    isMkv,
+    ffmpegAvailable: !!ffmpegBin,
+    liveUrl: `http://127.0.0.1:${PORT}/api/stream-live/${infoHash}/${fileIndex}?mode=remux`,
+    transcodeUrl: `http://127.0.0.1:${PORT}/api/stream-live/${infoHash}/${fileIndex}?mode=transcode`,
+    rawUrl: `http://127.0.0.1:${PORT}/api/stream/${infoHash}/${fileIndex}`
+  });
 });
 
 app.get('/api/stream/stats/:infoHash', (req, res) => {

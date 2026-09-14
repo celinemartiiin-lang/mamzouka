@@ -20,6 +20,10 @@ pub struct TorrentStream {
     pub flags: Option<String>,    // Emojis: "🇬🇧 🇫🇷 🇸🇦"
     pub languages: Vec<String>,
     pub is_debrid: bool,
+    #[serde(default)]
+    pub is_mp4: bool,
+    #[serde(default)]
+    pub format: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -88,14 +92,7 @@ impl TorrentClient {
             }
         }
 
-        // TMDB numeric ID for embed services (they need TMDB IDs, not IMDb)
-        let embed_id = if let Some(tid) = tmdb_id {
-            tid.to_string()
-        } else if !raw_id.starts_with("tt") {
-            raw_id.to_string()
-        } else {
-            raw_id.trim_start_matches("tt").to_string()
-        };
+
 
         let torrentio_query_id = if is_series {
             format!("{}:{}:{}", imdb_formatted_id, sea, ep)
@@ -103,260 +100,9 @@ impl TorrentClient {
             imdb_formatted_id.clone()
         };
 
-        // 1. Working Direct CDN Embed Streams — Fallback servers
-        if is_series {
-            let vidsrc_su = format!("https://vidsrc.su/embed/tv/{}/{}/{}", embed_id, sea, ep);
-            streams.push(TorrentStream {
-                name: "VidSrc SU [Web Server]".to_string(),
-                title: format!("S{}:E{} - Multi-CDN Fallback Server", sea, ep),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(vidsrc_su),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "VidSrc SU".to_string(),
-                audio_channels: Some("Stereo".to_string()),
-                flags: Some("🇬🇧 🇫🇷 🇸🇦".to_string()),
-                languages: vec!["English".to_string(), "Arabic".to_string()],
-                is_debrid: false,
-            });
-
-            let vidlink_url = format!("https://vidlink.pro/tv/{}/{}/{}", embed_id, sea, ep);
-            streams.push(TorrentStream {
-                name: "VidLink Pro [Web Server]".to_string(),
-                title: format!("S{}:E{} - Multi-Language Direct Server", sea, ep),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(vidlink_url),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "VidLink Pro".to_string(),
-                audio_channels: None,
-                flags: Some("🇸🇦 🇲🇦 🇬🇧 🇪🇸".to_string()),
-                languages: vec!["Arabic".to_string(), "English".to_string(), "Spanish".to_string()],
-                is_debrid: true,
-            });
-
-            let smashy_url = format!("https://embed.smashystream.com/playere.php?tmdb={}&season={}&episode={}", embed_id, sea, ep);
-            streams.push(TorrentStream {
-                name: "SmashyStream [Web Server]".to_string(),
-                title: format!("S{}:E{} - Smashy Fast CDN", sea, ep),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(smashy_url),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "SmashyStream".to_string(),
-                audio_channels: None,
-                flags: Some("🇬🇧 🇫🇷 🇸🇦".to_string()),
-                languages: vec!["English".to_string(), "Arabic".to_string()],
-                is_debrid: false,
-            });
-
-            let embedsu_url = format!("https://embed.su/embed/tv/{}/{}/{}", embed_id, sea, ep);
-            streams.push(TorrentStream {
-                name: "Embed.su [Web Server]".to_string(),
-                title: format!("S{}:E{} - Embed.su HD Server", sea, ep),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(embedsu_url),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "Embed.su".to_string(),
-                audio_channels: None,
-                flags: Some("🇬🇧 🇸🇦 🇲🇦".to_string()),
-                languages: vec!["English".to_string(), "Arabic".to_string()],
-                is_debrid: false,
-            });
-
-            let autoembed_url = format!("https://player.autoembed.co/embed/tv/{}/{}/{}", embed_id, sea, ep);
-            streams.push(TorrentStream {
-                name: "AutoEmbed CO [Web Server]".to_string(),
-                title: format!("S{}:E{} - High Speed Adaptive HD Server", sea, ep),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(autoembed_url),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "AutoEmbed CO".to_string(),
-                audio_channels: None,
-                flags: Some("🇬🇧 🇫🇷 🇸🇦".to_string()),
-                languages: vec!["English".to_string(), "Arabic".to_string()],
-                is_debrid: false,
-            });
-
-            let embed2_url = format!("https://www.2embed.cc/embedtv/{}&s={}&e={}", embed_id, sea, ep);
-            streams.push(TorrentStream {
-                name: "2Embed [Web Server]".to_string(),
-                title: format!("S{}:E{} - Global CDN Backup Server", sea, ep),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(embed2_url),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "2Embed".to_string(),
-                audio_channels: None,
-                flags: Some("🇬🇧 🇫🇷 🇩🇪".to_string()),
-                languages: vec!["English".to_string(), "French".to_string()],
-                is_debrid: false,
-            });
-        } else {
-            let vidsrc_su = format!("https://vidsrc.su/embed/movie/{}", embed_id);
-            streams.push(TorrentStream {
-                name: "VidSrc SU [Web Server]".to_string(),
-                title: "Multi-CDN Fallback Server".to_string(),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(vidsrc_su),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "VidSrc SU".to_string(),
-                audio_channels: Some("Stereo".to_string()),
-                flags: Some("🇬🇧 🇫🇷 🇸🇦".to_string()),
-                languages: vec!["English".to_string(), "Arabic".to_string()],
-                is_debrid: false,
-            });
-
-            let vidlink_url = format!("https://vidlink.pro/movie/{}", embed_id);
-            streams.push(TorrentStream {
-                name: "VidLink Pro [Web Server]".to_string(),
-                title: "Multi-Language Direct Server".to_string(),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(vidlink_url),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "VidLink Pro".to_string(),
-                audio_channels: None,
-                flags: Some("🇸🇦 🇲🇦 🇬🇧 🇪🇸".to_string()),
-                languages: vec!["Arabic".to_string(), "English".to_string(), "Spanish".to_string()],
-                is_debrid: false,
-            });
-
-            let smashy_url = format!("https://embed.smashystream.com/playere.php?tmdb={}", embed_id);
-            streams.push(TorrentStream {
-                name: "SmashyStream [Web Server]".to_string(),
-                title: "Smashy Fast CDN".to_string(),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(smashy_url),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "SmashyStream".to_string(),
-                audio_channels: None,
-                flags: Some("🇬🇧 🇫🇷 🇸🇦".to_string()),
-                languages: vec!["English".to_string(), "Arabic".to_string()],
-                is_debrid: false,
-            });
-
-            let embedsu_url = format!("https://embed.su/embed/movie/{}", embed_id);
-            streams.push(TorrentStream {
-                name: "Embed.su [Web Server]".to_string(),
-                title: "Embed.su HD Server".to_string(),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(embedsu_url),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "Embed.su".to_string(),
-                audio_channels: None,
-                flags: Some("🇬🇧 🇸🇦 🇲🇦".to_string()),
-                languages: vec!["English".to_string(), "Arabic".to_string()],
-                is_debrid: false,
-            });
-
-            let autoembed_url = format!("https://player.autoembed.co/embed/movie/{}", embed_id);
-            streams.push(TorrentStream {
-                name: "AutoEmbed CO [Web Server]".to_string(),
-                title: "High Speed Adaptive HD Server".to_string(),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(autoembed_url),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "AutoEmbed CO".to_string(),
-                audio_channels: None,
-                flags: Some("🇬🇧 🇫🇷 🇸🇦".to_string()),
-                languages: vec!["English".to_string(), "Arabic".to_string()],
-                is_debrid: false,
-            });
-
-            let embed2_url = format!("https://www.2embed.cc/embed/{}", embed_id);
-            streams.push(TorrentStream {
-                name: "2Embed [Web Server]".to_string(),
-                title: "Global CDN Backup Server".to_string(),
-                info_hash: None,
-                file_idx: None,
-                magnet_uri: None,
-                stream_url: Some(embed2_url),
-                resolution: "1080p".to_string(),
-                quality: "Web Embed".to_string(),
-                size_formatted: "Instant".to_string(),
-                size_bytes: None,
-                seeders: 0,
-                peers: 0,
-                provider: "2Embed".to_string(),
-                audio_channels: None,
-                flags: Some("🇬🇧 🇫🇷 🇩🇪".to_string()),
-                languages: vec!["English".to_string(), "French".to_string()],
-                is_debrid: false,
-            });
-        }
+        // Note: Web embed iframes (VidSrc, AutoEmbed, Smashy, Embed.su) are blocked by
+        // upstream X-Frame-Options / CSP in WebView2 and return "Content Blocked" errors.
+        // We exclusively utilize high-speed P2P Torrents (Torrentio, YTS) and Real-Debrid.
 
 
         // 2. Query Torrentio (with Real-Debrid API if provided)
@@ -367,99 +113,119 @@ impl TorrentClient {
         let skip_yts = disabled_lc.iter().any(|d| d == "yts");
 
         const DEFAULT_TORRENTIO: &str = "https://torrentio.strem.fun";
+        const DEFAULT_KNIGHTCRAWLER: &str = "https://knightcrawler.elfhosted.com";
+        const DEFAULT_MEDIAFUSION: &str = "https://mediafusion.elfhosted.com";
+
         let custom_base: Option<String> = torrentio_base
             .map(|b| b.trim().trim_end_matches('/').to_string())
             .filter(|b| b.starts_with("http://") || b.starts_with("https://"));
-        // Candidate bases: remote mirror first, compiled default as fallback.
+
+        // Candidate bases: remote mirror first, then Torrentio, KnightCrawler, MediaFusion
         let mut bases: Vec<String> = Vec::new();
         if let Some(ref cb) = custom_base {
-            if cb != DEFAULT_TORRENTIO {
+            if cb != DEFAULT_TORRENTIO && cb != DEFAULT_KNIGHTCRAWLER {
                 bases.push(cb.clone());
             }
         }
         bases.push(DEFAULT_TORRENTIO.to_string());
+        bases.push(DEFAULT_KNIGHTCRAWLER.to_string());
+        bases.push(DEFAULT_MEDIAFUSION.to_string());
 
         if !skip_torrentio {
         for base_root in &bases {
-        let torrentio_base_url = if let Some(ref token) = debrid_token {
-            if !token.trim().is_empty() {
-                format!("{}/realdebrid={}", base_root, token.trim())
+            let torrentio_base_url = if let Some(ref token) = debrid_token {
+                if !token.trim().is_empty() {
+                    format!("{}/realdebrid={}", base_root, token.trim())
+                } else {
+                    base_root.clone()
+                }
             } else {
                 base_root.clone()
-            }
-        } else {
-            base_root.clone()
-        };
+            };
 
-        let torrentio_url = format!("{}/stream/{}/{}.json", torrentio_base_url, target_stream_type, torrentio_query_id);
-        let mut fetched_ok = false;
-        if let Ok(res) = self.client.get(&torrentio_url).send().await {
-            if let Ok(json) = res.json::<serde_json::Value>().await {
-                if let Some(stream_arr) = json.get("streams").and_then(|s| s.as_array()) {
-                    for s in stream_arr {
-                        let raw_name = s.get("name").and_then(|n| n.as_str()).unwrap_or("Torrentio").to_string();
-                        let raw_title = s.get("title").and_then(|t| t.as_str()).unwrap_or("").to_string();
-                        let info_hash = s.get("infoHash").and_then(|h| h.as_str()).map(|h| h.to_lowercase());
-                        let file_idx = s.get("fileIdx").and_then(|f| f.as_u64()).map(|f| f as u32);
-                        let direct_url = s.get("url").and_then(|u| u.as_str()).map(|u| u.to_string());
+            let query_url = format!("{}/stream/{}/{}.json", torrentio_base_url, target_stream_type, torrentio_query_id);
+            if let Ok(res) = self.client.get(&query_url).send().await {
+                if let Ok(json) = res.json::<serde_json::Value>().await {
+                    if let Some(stream_arr) = json.get("streams").and_then(|s| s.as_array()) {
+                        for s in stream_arr {
+                            let raw_name = s.get("name").and_then(|n| n.as_str()).unwrap_or("P2P").to_string();
+                            let raw_title = s.get("title").and_then(|t| t.as_str()).unwrap_or("").to_string();
+                            let info_hash = s.get("infoHash").and_then(|h| h.as_str()).map(|h| h.to_lowercase());
+                            let file_idx = s.get("fileIdx").and_then(|f| f.as_u64()).map(|f| f as u32);
+                            let direct_url = s.get("url").and_then(|u| u.as_str()).map(|u| u.to_string());
 
-                        // Split title to get actual release filename on line 1 and metadata on subsequent lines
-                        let title_lines: Vec<&str> = raw_title.lines().map(|l| l.trim()).filter(|l| !l.is_empty()).collect();
-                        let raw_release_name = title_lines.first().cloned().unwrap_or(&raw_title);
+                            // Deduplicate streams across providers by info_hash
+                            if let Some(ref hash) = info_hash {
+                                if streams.iter().any(|existing: &TorrentStream| existing.info_hash.as_ref().map(|h| h.to_lowercase()) == Some(hash.clone())) {
+                                    continue;
+                                }
+                            }
 
-                        let (res, qual, size, seeders, flags, langs, audio) = parse_rich_torrent_meta(&raw_name, &raw_title);
+                            // Split title to get actual release filename on line 1 and metadata on subsequent lines
+                            let title_lines: Vec<&str> = raw_title.lines().map(|l| l.trim()).filter(|l| !l.is_empty()).collect();
+                            let raw_release_name = title_lines.first().cloned().unwrap_or(&raw_title);
 
-                        let magnet = if let Some(ref hash) = info_hash {
-                            Some(build_magnet_uri(hash, raw_release_name))
-                        } else {
-                            None
-                        };
+                            let (res, qual, size, seeders, flags, langs, audio) = parse_rich_torrent_meta(&raw_name, &raw_title);
 
-                        let is_debrid = raw_name.contains("[RD+]") || raw_name.contains("[RD]") || direct_url.is_some();
-                        let provider_name = if is_debrid {
-                            "⚡ Real-Debrid [Instant HD]".to_string()
-                        } else {
-                            extract_provider_name(&raw_title)
-                        };
+                            let magnet = if let Some(ref hash) = info_hash {
+                                Some(build_magnet_uri(hash, raw_release_name))
+                            } else {
+                                None
+                            };
 
-                        // Create clean, human-readable display title
-                        let display_title = if is_series {
-                            format!("S{}:E{} • {}", sea, ep, raw_release_name)
-                        } else {
-                            raw_release_name.to_string()
-                        };
+                            let is_debrid = raw_name.contains("[RD+]") || raw_name.contains("[RD]") || direct_url.is_some();
+                            let provider_name = if is_debrid {
+                                "⚡ Real-Debrid [Instant HD]".to_string()
+                            } else {
+                                extract_provider_name(&raw_title)
+                            };
 
-                        let display_name = if is_debrid {
-                            format!("⚡ Real-Debrid • {}", provider_name)
-                        } else {
-                            format!("Torrentio • {}", provider_name)
-                        };
+                            // Create clean, human-readable display title
+                            let display_title = if is_series {
+                                format!("S{}:E{} • {}", sea, ep, raw_release_name)
+                            } else {
+                                raw_release_name.to_string()
+                            };
 
-                        streams.push(TorrentStream {
-                            name: display_name,
-                            title: display_title,
-                            info_hash,
-                            file_idx,
-                            magnet_uri: magnet,
-                            stream_url: direct_url,
-                            resolution: res,
-                            quality: qual,
-                            size_formatted: size,
-                            size_bytes: None,
-                            seeders,
-                            peers: 0,
-                            provider: provider_name,
-                            audio_channels: audio,
-                            flags,
-                            languages: langs,
-                            is_debrid,
-                        });
+                            let display_name = if is_debrid {
+                                format!("⚡ Real-Debrid • {}", provider_name)
+                            } else if base_root.contains("knightcrawler") {
+                                format!("KnightCrawler • {}", provider_name)
+                            } else if base_root.contains("mediafusion") {
+                                format!("MediaFusion • {}", provider_name)
+                            } else {
+                                format!("Torrentio • {}", provider_name)
+                            };
+
+                            let (is_mp4, format_str) = detect_stream_format(&raw_name, &raw_title, &direct_url, &provider_name);
+
+                            streams.push(TorrentStream {
+                                name: display_name,
+                                title: display_title,
+                                info_hash,
+                                file_idx,
+                                magnet_uri: magnet,
+                                stream_url: direct_url,
+                                resolution: res,
+                                quality: qual,
+                                size_formatted: size,
+                                size_bytes: None,
+                                seeders,
+                                peers: 0,
+                                provider: provider_name,
+                                audio_channels: audio,
+                                flags,
+                                languages: langs,
+                                is_debrid,
+                                is_mp4,
+                                format: format_str,
+                            });
+                        }
                     }
-                    fetched_ok = true;
                 }
             }
-            }
-            if fetched_ok {
+            // If we have collected at least 10 high-quality streams, no need to overload more providers
+            if streams.len() >= 12 {
                 break;
             }
         }
@@ -502,6 +268,8 @@ impl TorrentClient {
                                         flags: Some("🇬🇧 English".to_string()),
                                         languages: vec!["English".to_string()],
                                         is_debrid: false,
+                                        is_mp4: true,
+                                        format: "MP4".to_string(),
                                     });
                                 }
                             }
@@ -511,23 +279,36 @@ impl TorrentClient {
             }
         }
 
-        // Sort: Real-Debrid First, then Torrents with seeds, then other torrents, then Web Embeds
+        // Sort: MP4 / Universal playback priority first (as requested by user),
+        // then Real-Debrid / seeds within MP4, followed by non-MP4 streams.
         streams.sort_by(|a, b| {
-            if a.is_debrid && !b.is_debrid {
-                return std::cmp::Ordering::Less;
-            }
-            if !a.is_debrid && b.is_debrid {
-                return std::cmp::Ordering::Greater;
-            }
-            // Real media (magnet / info_hash) before web embed iframes
-            let a_has_media = a.magnet_uri.is_some() || a.info_hash.is_some();
-            let b_has_media = b.magnet_uri.is_some() || b.info_hash.is_some();
+            // Real media (magnet / info_hash / direct stream_url) before empty embeds
+            let a_has_media = a.magnet_uri.is_some() || a.info_hash.is_some() || a.stream_url.is_some();
+            let b_has_media = b.magnet_uri.is_some() || b.info_hash.is_some() || b.stream_url.is_some();
             if a_has_media && !b_has_media {
                 return std::cmp::Ordering::Less;
             }
             if !a_has_media && b_has_media {
                 return std::cmp::Ordering::Greater;
             }
+
+            // 1. MP4 Format priority: MP4 streams play seamlessly on all TVs and players
+            if a.is_mp4 && !b.is_mp4 {
+                return std::cmp::Ordering::Less;
+            }
+            if !a.is_mp4 && b.is_mp4 {
+                return std::cmp::Ordering::Greater;
+            }
+
+            // 2. Real-Debrid priority within same format
+            if a.is_debrid && !b.is_debrid {
+                return std::cmp::Ordering::Less;
+            }
+            if !a.is_debrid && b.is_debrid {
+                return std::cmp::Ordering::Greater;
+            }
+
+            // 3. Seeders count
             b.seeders.cmp(&a.seeders)
         });
 
@@ -788,4 +569,42 @@ fn build_magnet_uri(info_hash: &str, title: &str) -> String {
         magnet.push_str(&urlencoding::encode(tr));
     }
     magnet
+}
+
+/// Detects if stream is MP4 (universal compatibility on TV/Web/Android) vs MKV/other
+pub fn detect_stream_format(name: &str, title: &str, stream_url: &Option<String>, provider: &str) -> (bool, String) {
+    let lower_title = title.to_lowercase();
+    let lower_name = name.to_lowercase();
+    let url_str = stream_url.as_deref().unwrap_or("").to_lowercase();
+
+    // Direct checks for MP4 / universal web-compatible streams
+    let has_mp4_indicator = lower_title.contains(".mp4")
+        || lower_title.contains("[mp4]")
+        || lower_title.contains(" mp4")
+        || lower_title.contains("-mp4")
+        || lower_name.contains(".mp4")
+        || lower_name.contains("mp4")
+        || url_str.ends_with(".mp4")
+        || url_str.contains(".mp4?")
+        || provider.eq_ignore_ascii_case("YTS"); // YTS encodes exclusively in MP4 (x264/AAC 2.0)
+
+    let has_mkv_indicator = lower_title.contains(".mkv")
+        || lower_title.contains("[mkv]")
+        || lower_title.contains(" mkv")
+        || lower_title.contains("-mkv")
+        || lower_name.contains(".mkv")
+        || url_str.ends_with(".mkv");
+
+    if has_mp4_indicator && !has_mkv_indicator {
+        (true, "MP4".to_string())
+    } else if has_mkv_indicator && !has_mp4_indicator {
+        (false, "MKV".to_string())
+    } else if has_mp4_indicator {
+        (true, "MP4".to_string())
+    } else if stream_url.is_some() && !has_mkv_indicator {
+        // Direct HTTP streams without MKV extension default to universal MP4
+        (true, "MP4".to_string())
+    } else {
+        (false, "MKV".to_string())
+    }
 }

@@ -157,14 +157,10 @@ jobs:
         run: npm run secure
 
       - name: Build Android ARM64 Release APK
-        env:
-          NDK_HOME: ${{ env.ANDROID_NDK_ROOT }}
         run: |
           npx tauri android build --apk --target aarch64
 
       - name: Build Android ARMv7 Release APK
-        env:
-          NDK_HOME: ${{ env.ANDROID_NDK_ROOT }}
         run: |
           npx tauri android build --apk --target armv7
 

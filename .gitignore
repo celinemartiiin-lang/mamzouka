@@ -44,4 +44,10 @@ src-tauri/gen/android/.gradle/
 *.apk
 *.aab
 emulator_screen*.png
+*.png
+*.idsig
+*.xml
+RELEASES/
+scratch/
+mamzouka_promo_2k.jpg
 

@@ -15,9 +15,10 @@ val tauriProperties = Properties().apply {
 
 android {
     compileSdk = 36
+    ndkVersion = "26.3.11579264"
     namespace = "com.mamzouka.stream"
     defaultConfig {
-        manifestPlaceholders["usesCleartextTraffic"] = "false"
+        manifestPlaceholders["usesCleartextTraffic"] = "true"
         applicationId = "com.mamzouka.stream"
         minSdk = 24
         targetSdk = 36

@@ -56,6 +56,9 @@ pub fn local_ffmpeg_path() -> Option<PathBuf> {
     let exe = exe_dir();
     let local = dirs::data_local_dir().unwrap_or_else(|| PathBuf::from("."));
     let cands = [
+        PathBuf::from(r"C:\ffmpeg\ffmpeg.exe"),
+        PathBuf::from(r"C:\ffmpeg\bin\ffmpeg.exe"),
+        PathBuf::from(r"C:\Program Files\ffmpeg\bin\ffmpeg.exe"),
         exe.join("ffmpeg.exe"),
         exe.join("resources").join("ffmpeg.exe"),
         exe.join("engine").join("ffmpeg.exe"),

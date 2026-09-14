@@ -8,7 +8,7 @@ window.MAMZOUKA_I18N = {
     nav: { discover: 'Discover', movies: 'Movies', tv: 'TV Series', anime: 'Anime', livetv: 'Live TV', radio: 'Live Radio', youtube: 'YouTube Hub', twitch: 'Twitch Gaming', addons: 'Add-ons', watchlist: 'Watchlist', downloads: 'Downloads', settings: 'Settings' },
     searchPlaceholder: 'Search movies, TV shows, anime, actors...',
     hero: { featured: '⭐ Featured Today', streamNow: 'Stream Now', details: 'Details' },
-    sections: { trending: '🔥 Trending Now', topMovies: '🎬 Top Movies', topTv: '📺 Top TV Series', animeTitle: '✨ Anime & Manga', arabCinema: '🌴 Arabic Cinema', continueWatching: '▶️ Continue Watching', recs: '💡 Because You Watched', liveChannels: '📡 Live Channels', mood: '🎭 Mood Discovery' },
+    sections: { trending: '🔥 Trending Now', topMovies: '🎬 Top Movies', topTv: '📺 Top TV Series', animeTitle: '✨ Anime & Manga', arabCinema: '🌴 Arabic Cinema', frenchCinema: '🥐 French Cinema', regionalCinema: '📍 Trending in Your Region', continueWatching: '▶️ Continue Watching', recs: '💡 Because You Watched', liveChannels: '📡 Live Channels', mood: '🎭 Mood Discovery' },
     stream: { play: 'Play', download: 'Download', vlc: 'VLC', seeds: 'seeds', instant: '⚡ RD+ Instant', deadSeeds: '⚠️ 0 seeds', deadWarn: '⚠️ Dead?', allSources: '🌐 All Sources' },
     player: { back: 'Back', retry: '⏭ Try Next Source', convert: '🔄 Convert MKV→MP4', openVlc: 'Open in VLC', sources: 'Sources' },
     errors: {
@@ -68,6 +68,9 @@ window.MAMZOUKA_I18N = {
       resumeConfirm: 'Resume "{t}" at {time}?', checking: '⏳ Checking...'
     },
     ui: {
+      moreLikeThis: '🎬 More Like This',
+      regionalTrending: '📍 Trending in Your Region',
+      activeSeedsOnly: '⚡ Active Seeds',
       moodSub: 'Pick a vibe → we map to TMDB filters',
       viewAllMovies: 'View All Movies ➔', viewAllSeries: 'View All Series ➔', viewAllAnime: 'View All Anime ➔',
       viewAllArab: 'View All Arab Movies ➔', viewAllLive: 'Watch All Live TV ➔',
@@ -240,7 +243,7 @@ window.MAMZOUKA_I18N = {
     nav: { discover: 'Découvrir', movies: 'Films', tv: 'Séries', anime: 'Anime', livetv: 'TV en direct', radio: 'Radio en direct', youtube: 'Hub YouTube', twitch: 'Jeux Twitch', addons: 'Extensions', watchlist: 'Ma liste', downloads: 'Téléchargements', settings: 'Paramètres' },
     searchPlaceholder: 'Rechercher films, séries, anime, acteurs...',
     hero: { featured: '⭐ À la une', streamNow: 'Regarder', details: 'Détails' },
-    sections: { trending: '🔥 Tendances', topMovies: '🎬 Top films', topTv: '📺 Top séries', animeTitle: '✨ Anime & Manga', arabCinema: '🌴 Cinéma arabe', continueWatching: '▶️ Continuer', recs: '💡 Parce que vous avez regardé', liveChannels: '📡 Chaînes en direct', mood: '🎭 Selon votre humeur' },
+    sections: { trending: '🔥 Tendances', topMovies: '🎬 Top films', topTv: '📺 Top séries', animeTitle: '✨ Anime & Manga', arabCinema: '🌴 Cinéma arabe', frenchCinema: '🥐 Cinéma français', regionalCinema: '📍 Tendances dans votre région', continueWatching: '▶️ Continuer', recs: '💡 Parce que vous avez regardé', liveChannels: '📡 Chaînes en direct', mood: '🎭 Selon votre humeur' },
     stream: { play: 'Lecture', download: 'Télécharger', vlc: 'VLC', seeds: 'sources', instant: '⚡ RD+ Instantané', deadSeeds: '⚠️ 0 sources', deadWarn: '⚠️ Mort ?', allSources: '🌐 Toutes les sources' },
     player: { back: 'Retour', retry: '⏭ Source suivante', convert: '🔄 Convertir MKV→MP4', openVlc: 'Ouvrir dans VLC', sources: 'Sources' },
     errors: {
@@ -300,6 +303,9 @@ window.MAMZOUKA_I18N = {
       resumeConfirm: 'Reprendre "{t}" à {time} ?', checking: '⏳ Vérification...'
     },
     ui: {
+      moreLikeThis: '🎬 Titres similaires',
+      regionalTrending: '📍 Tendances dans votre région',
+      activeSeedsOnly: '⚡ Sources actives',
       moodSub: 'Choisissez une ambiance → on mappe vers TMDB',
       viewAllMovies: 'Tous les films ➔', viewAllSeries: 'Toutes les séries ➔', viewAllAnime: 'Tous les anime ➔',
       viewAllArab: 'Films arabes ➔', viewAllLive: 'Toute la TV en direct ➔',
@@ -472,7 +478,7 @@ window.MAMZOUKA_I18N = {
     nav: { discover: 'اكتشف', movies: 'أفلام', tv: 'مسلسلات', anime: 'أنمي', livetv: 'تلفاز مباشر', radio: 'راديو', youtube: 'يوتيوب', twitch: 'ألعاب', addons: 'إضافات', watchlist: 'قائمة المشاهدة', downloads: 'التحميلات', settings: 'الإعدادات' },
     searchPlaceholder: 'ابحث عن أفلام، مسلسلات، أنمي، ممثلين...',
     hero: { featured: '⭐ مميز اليوم', streamNow: 'شاهد الآن', details: 'التفاصيل' },
-    sections: { trending: '🔥 الأكثر رواجاً', topMovies: '🎬 أفضل الأفلام', topTv: '📺 أفضل المسلسلات', animeTitle: '✨ أنمي ومانجا', arabCinema: '🌴 سينما عربية', continueWatching: '▶️ أكمل المشاهدة', recs: '💡 لأنك شاهدت', liveChannels: '📡 قنوات مباشرة', mood: '🎭 اكتشاف حسب المزاج' },
+    sections: { trending: '🔥 الأكثر رواجاً', topMovies: '🎬 أفضل الأفلام', topTv: '📺 أفضل المسلسلات', animeTitle: '✨ أنمي ومانجا', arabCinema: '🌴 سينما عربية', frenchCinema: '🥐 سينما فرنسية', regionalCinema: '📍 الأكثر رواجاً في منطقتك', continueWatching: '▶️ أكمل المشاهدة', recs: '💡 لأنك شاهدت', liveChannels: '📡 قنوات مباشرة', mood: '🎭 اكتشاف حسب المزاج' },
     stream: { play: 'تشغيل', download: 'تحميل', vlc: 'VLC', seeds: 'مشارك', instant: '⚡ فوري', deadSeeds: '⚠️ 0 مشارك', deadWarn: '⚠️ ميت؟', allSources: '🌐 كل المصادر' },
     player: { back: 'رجوع', retry: '⏭ جرّب مصدراً آخر', convert: '🔄 تحويل MKV←MP4', openVlc: 'فتح في VLC', sources: 'المصادر' },
     errors: {
@@ -532,6 +538,9 @@ window.MAMZOUKA_I18N = {
       resumeConfirm: 'أكمل "{t}" من {time}؟', checking: '⏳ جار الفحص...'
     },
     ui: {
+      moreLikeThis: '🎬 أعمال مشابهة',
+      regionalTrending: '📍 الأكثر رواجاً في منطقتك',
+      activeSeedsOnly: '⚡ روابط نشيطة ومؤكدة',
       moodSub: 'اختر المزاج ← نطابق مع فلاتر TMDB',
       viewAllMovies: 'كل الأفلام ➔', viewAllSeries: 'كل المسلسلات ➔', viewAllAnime: 'كل الأنمي ➔',
       viewAllArab: 'أفلام عربية ➔', viewAllLive: 'كل القنوات المباشرة ➔',
