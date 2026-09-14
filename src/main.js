@@ -4109,40 +4109,28 @@ async function startPlayback(stream, media, season = null, episode = null, opts 
           console.log('[WebTorrent Engine] Streaming active:', data.streamUrl, data.code);
           state.currentTorrentStreamUrl = data.streamUrl;
 
-          // --- Error isolation: ENGINE errors first ---
+          // If metadata is still resolving, do not abort: continue connecting in background
           if (data.code === 'METADATA_TIMEOUT' && !data.hasMetadata) {
-            showVideoErrorStructured({ code: 'METADATA_TIMEOUT', isMkv: false, canConvert: false });
-            return;
+            console.log('[WebTorrent Engine] Metadata still resolving, connecting in background...');
+            if (el.hudStatus) el.hudStatus.textContent = t('ui.hudConnecting', '⚡ Resolving metadata & peers...');
           }
 
           const fileName = (data.name || '').toLowerCase();
           const isMkv = !!(data.isMkv || fileName.endsWith('.mkv'));
           const fileIndex = (data.fileIndex != null) ? data.fileIndex : 0;
 
-          // Track MKV state & Live Transmuxing
           state.currentTorrentInfoHash = data.infoHash;
           state.currentTorrentFileIndex = fileIndex;
           state.currentTorrentIsMkv = isMkv;
-          if (!state.currentMkvMode) state.currentMkvMode = 'remux';
+          state.currentMkvMode = 'remux';
 
-          let initialStreamUrl = data.streamUrl;
-          if (isMkv && data.ffmpegAvailable !== false) {
-            initialStreamUrl = `${state.torrentEngineUrl}/api/stream-live/${data.infoHash}/${fileIndex}?mode=${state.currentMkvMode}`;
-            el.mainVideo.dataset.isLiveTransmux = 'true';
-            el.mainVideo.dataset.liveInfoHash = data.infoHash;
-            el.mainVideo.dataset.liveFileIndex = fileIndex;
-          } else {
-            delete el.mainVideo.dataset.isLiveTransmux;
-          }
+          // Direct WebTorrent streaming: always start with direct native stream
+          // so the browser buffers pieces immediately without FFmpeg blocking!
+          const initialStreamUrl = data.streamUrl;
+          delete el.mainVideo.dataset.isLiveTransmux;
 
           if (el.playerBtnMkvMode) {
-            if (isMkv) {
-              el.playerBtnMkvMode.style.display = 'inline-flex';
-              el.playerBtnMkvMode.textContent = state.currentMkvMode === 'transcode' ? '🔄 MKV Transcode' : '⚡ MKV Remux';
-              el.playerBtnMkvMode.title = state.currentMkvMode === 'transcode' ? 'Mode: Hardware Transcode (click to switch to fast Remux)' : 'Mode: Ultra-fast Direct Remux (click to switch to Transcode)';
-            } else {
-              el.playerBtnMkvMode.style.display = 'none';
-            }
+            el.playerBtnMkvMode.style.display = 'none';
           }
 
           // Dead-torrent signal: keep playing (webseeds may still work) but warn + watchdog
@@ -4154,11 +4142,7 @@ async function startPlayback(stream, media, season = null, episode = null, opts 
               hidePlayerLoading();
               state.failoverAttempts = 0;
               if (el.hudStatus) {
-                if (isMkv) {
-                  el.hudStatus.textContent = state.currentMkvMode === 'transcode' ? '🔄 Live Transcode (H.264)' : '⚡ Live Remux (AAC)';
-                } else {
-                  el.hudStatus.textContent = t('ui.hudP2pPlay', '⚡ P2P Playing');
-                }
+                el.hudStatus.textContent = t('ui.hudP2pPlay', '⚡ P2P Playing');
               }
             };
             el.mainVideo.onplaying = () => {
@@ -4170,36 +4154,28 @@ async function startPlayback(stream, media, season = null, episode = null, opts 
               const code = classifyVideoError(el.mainVideo.error, isMkv);
               console.warn('[Video Player Error]', code, el.mainVideo.error);
 
-              // Auto-Healing: If MKV in remux mode threw an error (e.g. video was HEVC/H.265 unsupported by WebView2),
-              // immediately auto-heal by switching to live hardware transcode!
-              if (isMkv && el.mainVideo.dataset.isLiveTransmux === 'true' && state.currentMkvMode === 'remux') {
-                console.log('[LiveTransmux] Remux failed, auto-healing with hardware/fast transcode mode...');
-                state.currentMkvMode = 'transcode';
-                if (el.playerBtnMkvMode) {
-                  el.playerBtnMkvMode.textContent = '🔄 MKV Transcode';
-                }
-                showPlayerLoading('🔄 Activating Hardware Compatibility Mode (HEVC/4K)...');
-                const transcodeUrl = `${state.torrentEngineUrl}/api/stream-live/${data.infoHash}/${fileIndex}?mode=transcode`;
-                el.mainVideo.src = transcodeUrl;
-                el.mainVideo.load();
-                el.mainVideo.play().catch((e) => console.warn('Transcode play error:', e));
-                return;
-              }
-
               if (state.torrentStatsInterval) {
                 clearInterval(state.torrentStatsInterval);
                 state.torrentStatsInterval = null;
               }
-              // If MKV has incompatible audio/codec (e.g. AC3/DTS audio unsupported by browser)
+
+              // If MKV has incompatible codec/audio (e.g. HEVC 10-bit or DTS audio),
+              // offer immediate 1-click VLC or live hardware transcode
               if (isMkv && (code === 'UNSUPPORTED_CONTAINER' || code === 'UNSUPPORTED_CODEC')) {
                 showVideoErrorStructured({
                   code,
                   isMkv: true,
                   canConvert: true,
-                  onConvert: () => startMkvAutoConvert(data.infoHash, fileIndex, data.streamUrl),
+                  onConvert: () => {
+                    showPlayerLoading('🔄 Activating Hardware Transcode Mode (NVENC/4K)...');
+                    el.mainVideo.src = `${state.torrentEngineUrl}/api/stream-live/${data.infoHash}/${fileIndex}?mode=transcode`;
+                    el.mainVideo.load();
+                    el.mainVideo.play().catch((e) => console.warn(e));
+                  },
                 });
                 return;
               }
+
               // Network stall on a dead torrent -> suggest next source, don't loop forever
               if (code === 'NETWORK' && deadOnStart) {
                 showVideoErrorStructured({ code: 'NO_PEERS', isMkv, canConvert: isMkv });
@@ -4213,7 +4189,7 @@ async function startPlayback(stream, media, season = null, episode = null, opts 
               });
             };
 
-            // Direct playback: Always stream directly to the player without waiting for slow conversion!
+            // Direct playback: Stream directly without stalling!
             el.mainVideo.src = initialStreamUrl;
             el.mainVideo.load();
             el.mainVideo.play().catch((e) => console.log('Autoplay notice:', e));

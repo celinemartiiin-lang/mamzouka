@@ -430,8 +430,8 @@ app.post('/api/stream/start', async (req, res) => {
       }
     }
 
-    // Wait for metadata to resolve files list (45s: DHT can be slow)
-    await waitForTorrentReady(torrent, 45000);
+    // Wait for metadata to resolve files list (15s max so UI doesn't hang)
+    await waitForTorrentReady(torrent, 15000);
 
     const hasMetadata = Array.isArray(torrent.files) && torrent.files.length > 0;
     const peers = torrent.numPeers || 0;
